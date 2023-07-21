@@ -1,6 +1,6 @@
 {
     "name": "back-teste",
-    "version":31,
+    "version":2,
     "public": true,
     "build": {
         "src":"app.js",
