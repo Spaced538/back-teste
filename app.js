@@ -81,8 +81,6 @@ app.put('/usuarios/:id', async (req, res) => {
   }
 });
 
-app.use(app);
-
  
 app.listen(port, () => {
    
