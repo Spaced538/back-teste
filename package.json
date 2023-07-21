@@ -4,6 +4,7 @@
   "description": "teste",
   "main": "app.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./app.js",
     "tests": "node ./service/conectionDb/service.js",
@@ -15,6 +16,7 @@
     "@vercel/postgres": "^0.4.0",
     "express": "^4.18.2",
     "nodemon": "^3.0.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "vercel": "^31.0.4"
   }
 }

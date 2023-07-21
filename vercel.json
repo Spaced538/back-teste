@@ -1,0 +1,15 @@
+{
+    "name": "back-teste",
+    "version":31,
+    "public": true,
+    "build": {
+        "src":"app.js",
+        "use":"@vercel/node"
+    },
+    "routes": [
+        {
+            "src": "controllers/teste.js",
+            "dest": "app.js"
+        }
+    ]
+}
