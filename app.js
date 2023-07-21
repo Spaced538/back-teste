@@ -81,9 +81,11 @@ app.put('/usuarios/:id', async (req, res) => {
   }
 });
 
+app.use(app);
 
  
 app.listen(port, () => {
    
     console.log("Servidor inciado na portta", port);
 })
+
