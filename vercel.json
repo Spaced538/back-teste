@@ -2,14 +2,16 @@
     "name": "back-teste",
     "version":2,
     "public": true,
-    "builds": {
-        "src":"app.js",
-        "use":"@vercel/node"
-    },
-    "routes": [
+    "builds": [
         {
-            "src": "/(.*)",
-            "dest": "app.js"
+            "src":"app.js",
+            "use":"@vercel/node"
         }
-    ]
+    ],
+    "routes": [
+        { "src": "/", "dest": "/app.js" },
+        { "src": "/create", "dest": "/app.js" },
+        { "src": "/usuarios/:id", "dest": "/app.js" },
+        { "src": "/usuarios/:id", "methods": ["PUT", "DELETE"], "dest": "/app.js" }
+      ]
 }
