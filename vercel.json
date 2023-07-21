@@ -1,5 +1,5 @@
 {
-    "name": "back-teste",
+
     "version":2,
     "public": true,
     "builds": [
@@ -9,9 +9,7 @@
         }
     ],
     "routes": [
-        { "src": "/", "dest": "/app.js" },
-        { "src": "/create", "dest": "/app.js" },
-        { "src": "/usuarios/:id", "dest": "/app.js" },
-        { "src": "/usuarios/:id", "methods": ["PUT", "DELETE"], "dest": "/app.js" }
+        { "src": "/", "dest": "app.js" }
+
       ]
 }
