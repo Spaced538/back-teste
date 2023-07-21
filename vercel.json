@@ -8,7 +8,7 @@
     },
     "routes": [
         {
-            "src": "controllers/teste.js",
+            "src": "/(.*)",
             "dest": "app.js"
         }
     ]
