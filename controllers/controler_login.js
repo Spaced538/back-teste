@@ -1,5 +1,5 @@
 const { pool } = require('../service/conectionDb/service');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 async function getUsuario(email) {
