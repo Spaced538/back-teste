@@ -32,6 +32,7 @@ function verificarToken(req, res, next) {
 }
 
 const Login = async (email, senha) => {
+    
     try {
 
         // Obtém uma conexão do pool
@@ -40,25 +41,32 @@ const Login = async (email, senha) => {
         // Verifica se já existe um usuário com o email fornecido
 
         const existingUser = await pool.query('SELECT * FROM adm WHERE email = $1', [email]);
-        if (!existingUser) {
+        if (!existingUser) 
+        {
             throw new Error('Email ou senha invalido!');
         }
 
         const usuario = await getUsuario(email); // Renomeado 'email' para 'usuario'
 
-        if (usuario && bcrypt.compareSync(senha, usuario.senha)) {
+        if (usuario && bcrypt.compareSync(senha, usuario.senha)) 
+        {
             const token = jwt.sign({ email: usuario.email }, process.env.JWT_PASS, { expiresIn: '1h' });
             return token;
-        } else {
+        } 
+        else 
+        {
           return false; // Credenciais inválidas
         }
-    } catch (error) {
+    } 
+    catch (error) 
+    {
       console.error('Erro ao buscar os usuários da tabela "ADM":', error);
       return null; // Em caso de erro, pode retornar null ou um valor adequado
     }
 };
 
 module.exports = {
+
     Login,
     verificarToken
 };
