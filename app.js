@@ -1,11 +1,21 @@
 const express =  require('express')
+const cors = require('cors');
+
+const { pool } = require('./service/conectionDb/service');
+
+const multer = require('multer');
 const app = express() 
 const { getAdms,createAdm,deleteAdm,updateAdm,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,
         getContact,createContact,deleteContact,updateContact, } = require('./controllers/controlers_tables');
 const { Login,verificarToken } = require('./controllers/controler_login');
+const { createColaborador,getAllColaboradores } = require('./controllers/controler_images');
+//const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
 
+app.use(cors());
 app.use(express.json());
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const port = 8000
 
@@ -312,10 +322,53 @@ app.put('/contacts/:id', verificarToken, async (req, res) => {
   }
 });
 
+////////////////////////
+
+app.post('/colaboradores/create', upload.single('imagem'), async (req, res) => {
+  try {
+    const { nome, funcao } = req.body;
+    const imagemBuffer = req.file.buffer;
+
+    const nameFile = req.file.originalname;
+
+    // Chama a função createColaborador para criar um novo Colaborador
+    const newColaborador = await createColaborador(nome, funcao, imagemBuffer, nameFile);
+
+    // Retorna o novo Colaborador como resposta da requisição
+    res.json(newColaborador);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar colaborador.' });
+  }
+});
+
+app.get('/colaboradores', async (req, res) => {
+
+  try {
+
+    const colaboradores = await getAllColaboradores();
+
+    if (colaboradores) 
+    {
+      res.json(JSON.parse(colaboradores)); // Envia a resposta como JSON para o cliente
+    } 
+    else 
+    {
+      res.status(500).json({ error: 'Erro ao buscar os contatos.' });
+    }
+  } 
+  catch (error) 
+  {
+    console.error('Erro ao buscar os contatos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
  
 app.listen(port, () => {
    
-    console.log("Servidor inciado na portta", port);
+  console.log("Servidor inciado na portta", port);
 
 })
 

@@ -258,7 +258,6 @@ const createContact = async (nome, sobrenome, email, assunto) => {
   }
 };
 
-
 const deleteContact = async (id) => {
   try {
       const client = await pool.connect();
@@ -305,8 +304,6 @@ const updateContact = async (id,nome, sobrenome, email, assunto) => {
 };
 
 
-
-
 module.exports = {
 
     getAdms,
@@ -323,5 +320,7 @@ module.exports = {
     createContact,
     deleteContact,
     updateContact,
+
+    generateHexId,
 
 };
