@@ -51,7 +51,10 @@ const Login = async (email, senha) => {
         if (usuario && bcrypt.compareSync(senha, usuario.senha)) 
         {
             const token = jwt.sign({ email: usuario.email }, process.env.JWT_PASS, { expiresIn: '1h' });
-            return token;
+            return {
+                id: usuario.id, // Supondo que o ID do administrador esteja na coluna 'id'
+                token: token
+            };
         } 
         else 
         {

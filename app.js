@@ -1,15 +1,13 @@
 const express =  require('express')
 const cors = require('cors');
-
-const { pool } = require('./service/conectionDb/service');
-
 const multer = require('multer');
 const app = express() 
 const { getAdms,createAdm,deleteAdm,updateAdm,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,
         getContact,createContact,deleteContact,updateContact, } = require('./controllers/controlers_tables');
 const { Login,verificarToken } = require('./controllers/controler_login');
-const { createColaborador,getAllColaboradores } = require('./controllers/controler_images');
+const { createColaborador,getAllColaboradores,deleteColaborador,
+        createServicos,getAllServicos,deleteServicos } = require('./controllers/controler_images');
 //const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
 
 app.use(cors());
@@ -364,6 +362,72 @@ app.get('/colaboradores', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+// Configuração da rota para excluir um colaborador
+app.delete('/colaboradores/:id', async (req, res) => {
+
+  try {
+
+    const id = req.params.id;
+
+    // Chama a função deleteContact para excluir o colaborador
+    const dContact = await deleteColaborador(id);
+    
+    // Retorna o colaborador excluído como resposta da requisição
+    res.json(dContact);
+
+  } 
+  catch (error) 
+  {
+    console.error('Erro ao excluir o colaborador:', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao excluir o colaborador' });
+  }
+});
+
+////////////////////////
+
+app.post('/servicos/create', upload.single('imagem'), async (req, res) => {
+  try {
+    const { nome, descricao } = req.body;
+    const imagemBuffer = req.file.buffer;
+
+    const nameFile = req.file.originalname;
+
+    // Chama a função createColaborador para criar um novo Colaborador
+    const newServico = await createServicos(nome, descricao, imagemBuffer, nameFile);
+
+    // Retorna o novo Colaborador como resposta da requisição
+    res.json(newServico);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar Serviço.' });
+  }
+});
+
+app.get('/servicos', async (req, res) => {
+
+  try {
+
+    const servicos = await getAllServicos();
+
+    if (servicos) 
+    {
+      res.json(JSON.parse(servicos)); // Envia a resposta como JSON para o cliente
+    } 
+    else 
+    {
+      res.status(500).json({ error: 'Erro ao buscar os Serviços.' });
+    }
+  } 
+  catch (error) 
+  {
+    console.error('Erro ao buscar os contatos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
  
 app.listen(port, () => {
