@@ -140,7 +140,7 @@ app.put('/adms/:id', verificarToken, async (req, res) => {
 
 ////////////////////////
 
-app.get('/depoiments', verificarToken, async (req, res) => {
+app.get('/depoiments', async (req, res) => {
 
   try {
 
@@ -255,7 +255,7 @@ app.get('/contacts', verificarToken, async (req, res) => {
 });
 
 // Configuração da rota para criar um contato do cliente
-app.post('/contacts/create', verificarToken, async (req, res) => {
+app.post('/contacts/create', async (req, res) => {
 
   try {
     // Recupera os dados do corpo da requisição
