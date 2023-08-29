@@ -112,22 +112,22 @@ const updateAdm = async (id, usuario, email, senha) => {
     }
   };
 
-// Função para buscar as informações de um adm pelo ID
+// Função para buscar as informações de um administrador pelo ID
 const getAdmById = async (id) => {
   try {
     // Obtém uma conexão do pool
     const client = await pool.connect();
 
-    // Executa a consulta para buscar o adm pelo ID
-    const queryResult = await client.query('SELECT * FROM adm WHERE id = $1', [id]);
+    // Executa a consulta para buscar o administrador pelo ID (todos os campos, exceto a senha)
+    const queryResult = await client.query('SELECT id, usuario, email FROM adm WHERE id = $1', [id]);
 
     // Libera a conexão de volta para o pool
     client.release();
 
-    // Retorna o adm encontrado como JSON
+    // Retorna o administrador encontrado como JSON
     return JSON.stringify(queryResult.rows[0]);
   } catch (error) {
-    console.error('Erro ao buscar o usuário:', error);
+    console.error('Erro ao buscar o administrador:', error);
     return null; // Em caso de erro, pode retornar null ou um valor adequado
   }
 };

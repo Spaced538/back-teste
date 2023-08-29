@@ -1,7 +1,8 @@
 const express =  require('express')
 const cors = require('cors');
 const multer = require('multer');
-const { getAdms,createAdm,deleteAdm,updateAdm,
+const { getAdmById,
+        getAdms,createAdm,deleteAdm,updateAdm,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,
         getContact,createContact,deleteContact,updateContact, } = require('./controllers/controlers_tables');
 const { Login,verificarToken } = require('./controllers/controler_login');
