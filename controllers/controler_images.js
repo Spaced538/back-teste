@@ -348,7 +348,7 @@ const createEbook = async (titulo, descricao, pdfBuffer, pdfName, imagemBuffer, 
     const pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
     const imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
 
-    const query = 'INSERT INTO Ebooks (id, Titulo, Descrição, url_PDF, url_imagem, nome_arquivo_pdf, nome_arquivo_imagem) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+    const query = 'INSERT INTO Ebooks (id, titulo, descrição, url_pdf, url_imagem, nome_arquivo_pdf, nome_arquivo_imagem) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
     const values = [id, titulo, descricao, pdfUrl, imageUrl, newPdfName, newImageName];
     const result = await client.query(query, values);
 
@@ -429,22 +429,40 @@ const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuff
   try {
     const client = await pool.connect();
 
-    const checkEbookQuery = 'SELECT * FROM ebooks WHERE id = $1';
+    const checkEbookQuery = 'SELECT * FROM Ebooks WHERE id = $1';
     const checkEbookResult = await client.query(checkEbookQuery, [id]);
 
     if (checkEbookResult.rows.length === 0) {
       throw new Error('Ebook não encontrado.');
     }
 
-    if (pdfBuffer) {
-      const pdfFileName = checkEbookResult.rows[0].nome_arquivo_pdf;
-      await deletePDFFromStorage(pdfFileName);
+    const existingEbook = checkEbookResult.rows[0];
 
-      const newPdfName = `${Date.now()}_${pdfName}`;
-      const pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
+    if (pdfBuffer || imagemBuffer) {
+      if (pdfBuffer) {
+        const pdfFileName = existingEbook.nome_arquivo_pdf;
+        await deletePDFFromStorage(pdfFileName);
 
-      const updateQuery = 'UPDATE Ebooks SET Titulo = $2, descricao = $3, url_PDF = $4, nome_arquivo_pdf = $5 WHERE id = $1 RETURNING *';
-      const updateValues = [id, titulo, descricao, pdfUrl, newPdfName];
+        const newPdfName = `${Date.now()}_${pdfName}`;
+        const pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
+        
+        existingEbook.url_PDF = pdfUrl;
+        existingEbook.nome_arquivo_pdf = newPdfName;
+      }
+
+      if (imagemBuffer) {
+        const imageFileName = existingEbook.nome_arquivo_imagem;
+        await deleteImageFromStorage(imageFileName);
+
+        const newImageName = `${Date.now()}_${imageName}`;
+        const imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
+        
+        existingEbook.url_imagem = imageUrl;
+        existingEbook.nome_arquivo_imagem = newImageName;
+      }
+
+      const updateQuery = 'UPDATE ebooks SET itulo = $2, descrição = $3, url_PDF = $4, nome_arquivo_pdf = $5, url_imagem = $6, nome_arquivo_imagem = $7 WHERE id = $1 RETURNING *';
+      const updateValues = [id, titulo, descricao, existingEbook.url_PDF, existingEbook.nome_arquivo_pdf, existingEbook.url_imagem, existingEbook.nome_arquivo_imagem];
       const result = await client.query(updateQuery, updateValues);
 
       client.release();

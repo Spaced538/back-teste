@@ -230,6 +230,29 @@ const updateDepoiments = async (id, nome, texto) => {
   }
 };
 
+const getDepoimentoById = async (id) => {
+  try {
+    // Obtém uma conexão do pool
+    const client = await pool.connect();
+
+    // Executa a consulta para buscar o depoimento pelo ID
+    const queryResult = await client.query('SELECT * FROM depoimentos WHERE id = $1', [id]);
+
+    // Libera a conexão de volta para o pool
+    client.release();
+
+    if (queryResult.rows.length > 0) {
+      // Retorna o depoimento encontrado como um objeto JSON
+      return JSON.stringify(queryResult.rows[0]);
+    } else {
+      return null; // Retorna null se o depoimento não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar depoimento pelo ID:', error);
+    throw error;
+  }
+};
+
 /////////////////////////////////////////
 
 // Função para buscar todos os contatos dos clientes da tabela "contato_cliente"
@@ -343,6 +366,7 @@ module.exports = {
     createDepoiments,
     deleteDepoiments,
     updateDepoiments,
+    getDepoimentoById,
 
     getContact,
     createContact,

@@ -1,9 +1,8 @@
 const express =  require('express')
 const cors = require('cors');
 const multer = require('multer');
-const { getAdmById,
-        getAdms,createAdm,deleteAdm,updateAdm,
-        getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,
+const { getAdms,createAdm,deleteAdm,updateAdm,getAdmById,
+        getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,getDepoimentoById,
         getContact,createContact,deleteContact,updateContact, } = require('./controllers/controlers_tables');
 const { Login,verificarToken } = require('./controllers/controler_login');
 const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,
@@ -246,6 +245,25 @@ app.put('/depoiments/:id', verificarToken, async (req, res) => {
     console.error('Erro ao atualizar o depoimento:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao atualizar o depoimento' });
+  }
+});
+
+// Configuração da rota para obter um depoimento pelo ID
+app.get('/depoimentos/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função getDepoimentoById para obter o depoimento pelo ID
+    const depoimento = await getDepoimentoById(id);
+
+    if (depoimento) {
+      res.json(depoimento); // Retorna o depoimento encontrado como resposta
+    } else {
+      res.status(404).json({ error: 'Depoimento não encontrado.' }); // Retorna erro 404 se o depoimento não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar depoimento pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
 
@@ -517,6 +535,61 @@ app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
     console.error('Erro ao atualizar o serviço:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao atualizar o serviço' });
+  }
+});
+
+/////////////////////////////////
+
+app.post('/ebooks/create', verificarToken, async (req, res) => {
+  try {
+    const { titulo, descricao} = req.body;
+    const { pdfBuffer, imagemBuffer } = req.file.buffer;
+  
+    
+    const novoEbook = await createEbook(titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
+    
+    res.json(novoEbook);
+  } catch (error) {
+    console.error('Erro ao criar um novo ebook:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo ebook' });
+  }
+});
+
+app.get('/ebooks', verificarToken, async (req, res) => {
+  try {
+    const ebooks = await getAllEbooks();
+
+    res.json(JSON.parse(ebooks));
+  } catch (error) {
+    console.error('Erro ao listar ebooks:', error);
+    res.status(500).json({ error: 'Erro ao listar ebooks' });
+  }
+});
+
+app.delete('/ebooks/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedEbook = await deleteEbook(id);
+
+    res.json(deletedEbook);
+  } catch (error) {
+    console.error('Erro ao excluir ebook:', error);
+    res.status(500).json({ error: 'Erro ao excluir ebook' });
+  }
+});
+
+app.put('/ebooks/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { titulo, descricao} = req.body;
+    const { pdfBuffer, imagemBuffer } = req.file.buffer; 
+
+    const updatedEbook = await updateEbook(id, titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
+
+    res.json(updatedEbook);
+  } catch (error) {
+    console.error('Erro ao atualizar ebook:', error);
+    res.status(500).json({ error: 'Erro ao atualizar ebook' });
   }
 });
 
