@@ -293,7 +293,7 @@ const deleteServicos = async (id) => {
       const imageFileName = getImageFileNameResult.rows[0].nome_arquivo_imagem;
   
       // Exclua a imagem do Firebase Storage usando o nome do arquivo
-      await deleteImageFromStorage(imageFileName);
+      // await deleteImageFromStorage(imageFileName);
   
       // Agora, exclua o registro do colaborador da tabela
       const deleteQuery = 'DELETE FROM servicos WHERE id = $1 RETURNING *';
