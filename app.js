@@ -508,7 +508,7 @@ app.get('/servicos', async (req, res) => {
 });
 
 // Configuração da rota para excluir um serviço
-app.delete('/servicos/:id', async (req, res) => {
+app.delete('/servicos/:id', verificarToken, async (req, res) => {
 
   try {
 
