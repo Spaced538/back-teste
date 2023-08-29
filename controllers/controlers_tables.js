@@ -90,27 +90,58 @@ const deleteAdm = async (id) => {
     }
 };
 
-// Função para atualizar um Adm na tabela "adm"
 const updateAdm = async (id, usuario, email, senha) => {
-    try {
-      // Obtém uma conexão do pool
-      const client = await pool.connect();
-  
-      // Executa a consulta para atualizar o usuário
-      const queryResult = await client.query(
-        'UPDATE adm SET USUARIO = $1, EMAIL = $2, SENHA = $3 WHERE ID = $4 RETURNING *',
-        [usuario, email, senha, id]
-      );
-  
-      // Obtém o Adm atualizado
-      const updatedUser = queryResult.rows[0];
-  
-      // Libera a conexão de volta para o pool
-      client.release();
-    } catch (error) {
-      console.error('Erro ao atualizar o usuário:', error);
+  try {
+    // Obtém uma conexão do pool
+    const client = await pool.connect();
+
+    // Constrói a parte da consulta SQL para atualizar campos específicos
+    let updateFields = [];
+    let queryParams = [id];
+
+    // Verifica e adiciona o campo USUARIO se for passado
+    if (usuario !== undefined) {
+      updateFields.push('USUARIO = $2');
+      queryParams.push(usuario);
     }
-  };
+
+    // Verifica e adiciona o campo EMAIL se for passado
+    if (email !== undefined) {
+      updateFields.push('EMAIL = $3');
+      queryParams.push(email);
+    }
+
+    // Verifica e adiciona o campo SENHA se for passado
+    if (senha !== undefined) {
+      // Criptografa a nova senha usando o bcrypt
+      const hashedPassword = await bcrypt.hash(senha, 10);
+
+      updateFields.push('SENHA = $4');
+      queryParams.push(hashedPassword);
+    }
+
+    // Monta a consulta SQL final
+    const updateQuery = `
+      UPDATE adm
+      SET ${updateFields.join(', ')}
+      WHERE ID = $1
+      RETURNING *
+    `;
+
+    // Executa a consulta para atualizar o usuário
+    const queryResult = await client.query(updateQuery, queryParams);
+
+    // Obtém o Adm atualizado
+    const updatedUser = queryResult.rows[0];
+
+    // Libera a conexão de volta para o pool
+    client.release();
+    
+    return updatedUser; // Retorna o usuário atualizado
+  } catch (error) {
+    console.error('Erro ao atualizar o usuário:', error);
+  }
+};
 
 // Função para buscar as informações de um administrador pelo ID
 const getAdmById = async (id) => {
@@ -214,21 +245,39 @@ const updateDepoiments = async (id, nome, texto) => {
     // Obtém uma conexão do pool
     const client = await pool.connect();
 
+    // Constrói a parte da consulta que será modificada de acordo com os valores fornecidos
+    let updateClause = '';
+    let queryParams = [id];
+
+    if (nome !== undefined) {
+      updateClause += 'NOME = $2';
+      queryParams.push(nome);
+    }
+
+    if (texto !== undefined) {
+      if (updateClause !== '') {
+        updateClause += ', ';
+      }
+      updateClause += 'TEXTO = $' + (updateClause.length + 2);
+      queryParams.push(texto);
+    }
+
     // Executa a consulta para atualizar o Depoimento
-    const queryResult = await client.query(
-      'UPDATE depoimentos SET NOME = $1, TEXTO = $2 WHERE ID = $3 RETURNING *',
-      [nome, texto, id]
-    );
+    const query = 'UPDATE depoimentos SET ' + updateClause + ' WHERE ID = $1 RETURNING *';
+    const queryResult = await client.query(query, queryParams);
 
     // Obtém o Depoimento atualizado
     const updatedDepoiment = queryResult.rows[0];
 
     // Libera a conexão de volta para o pool
     client.release();
+
+    return updatedDepoiment; // Retorna o depoimento atualizado
   } catch (error) {
     console.error('Erro ao atualizar o depoimento:', error);
   }
 };
+
 
 const getDepoimentoById = async (id) => {
   try {
@@ -325,28 +374,6 @@ const deleteContact = async (id) => {
   } catch (error) {
       console.error('Erro ao excluir o Depoimento:', error);
       throw error;
-  }
-};
-
-// Função para atualizar um contato do cliente na tabela "contato_clientes"
-const updateContact = async (id,nome, sobrenome, email, assunto) => {
-  try {
-    // Obtém uma conexão do pool
-    const client = await pool.connect();
-
-    // Executa a consulta para atualizar o contato do cliente
-    const queryResult = await client.query(
-      'UPDATE contato_clientes SET NOME = $1, SOBRENOME = $2, EMAIL = $3, ASSUNTO = $4 WHERE ID = $5 RETURNING *',
-      [nome, sobrenome, email, assunto, id]
-    );
-
-    // Obtém o contato do cliente atualizado
-    const updatedContact = queryResult.rows[0];
-
-    // Libera a conexão de volta para o pool
-    client.release();
-  } catch (error) {
-    console.error('Erro ao atualizar o contato do cliente:', error);
   }
 };
 
