@@ -15,7 +15,7 @@ async function getUsuario(email) {
 }
 
 function verificarToken(req, res, next) {
-    const token = req.headers.authorization;
+    const token = req.header('Authorization').replace('Bearer ', '');
 
     if (!token) {
         return res.status(401).json({ message: 'Token não fornecido.' });
@@ -48,14 +48,13 @@ const Login = async (email, senha) => {
 
         const usuario = await getUsuario(email); // Renomeado 'email' para 'usuario'
 
-        if (usuario && bcrypt.compareSync(senha, usuario.senha)) 
-        {
-            const token = jwt.sign({ email: usuario.email }, process.env.JWT_PASS, { expiresIn: '1h' });
+        if (bcrypt.compareSync(senha, usuario.senha)) {
+            const token = jwt.sign({ email: usuario.email }, process.env.JWT_PASS, { expiresIn: '150h' });
             return {
-                id: usuario.id, // Supondo que o ID do administrador esteja na coluna 'id'
+                id: usuario.id, // Substitua 'id' pelo nome correto da coluna de ID
                 token: token
             };
-        } 
+        }
         else 
         {
           return false; // Credenciais inválidas

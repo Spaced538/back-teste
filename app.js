@@ -1,14 +1,15 @@
 const express =  require('express')
 const cors = require('cors');
 const multer = require('multer');
-const app = express() 
 const { getAdms,createAdm,deleteAdm,updateAdm,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,
         getContact,createContact,deleteContact,updateContact, } = require('./controllers/controlers_tables');
 const { Login,verificarToken } = require('./controllers/controler_login');
-const { createColaborador,getAllColaboradores,deleteColaborador,
+const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,
         createServicos,getAllServicos,deleteServicos } = require('./controllers/controler_images');
 //const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
+const app = express() 
+const jwt = require('jsonwebtoken');
 
 app.use(cors());
 app.use(express.json());
@@ -385,6 +386,31 @@ app.delete('/colaboradores/:id', async (req, res) => {
   }
 });
 
+// Configuração da rota para atualizar um colaborador
+app.put('/colaboradores/:id', upload.single('imagem'), async (req, res) => {
+
+  try {
+    const id = req.params.id;
+
+    const { nome, funcao } = req.body;
+    const imagemBuffer = req.file ? req.file.buffer : undefined;
+    const nameFile = req.file ? req.file.originalname : undefined;
+
+    // Chama a função updateColaborador para atualizar um novo Colaborador
+    const upColaborador = await updateColaborador(id, nome, funcao, imagemBuffer, nameFile);
+
+    // Retorna o novo Colaborador como resposta da requisição
+    res.json(upColaborador);
+  } 
+  catch (error) 
+  {
+    console.error('Erro ao atualizar o contato:', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao atualizar o contato' });
+  }
+});
+
+
 ////////////////////////
 
 app.post('/servicos/create', upload.single('imagem'), async (req, res) => {
@@ -427,6 +453,53 @@ app.get('/servicos', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+// Configuração da rota para excluir um serviço
+app.delete('/servicos/:id', async (req, res) => {
+
+  try {
+
+    const id = req.params.id;
+
+    // Chama a função deleteServicos para excluir o serviço
+    const dServico = await deleteServicos(id);
+    
+    // Retorna o serviço excluído como resposta da requisição
+    res.json(dServico);
+
+  } 
+  catch (error) 
+  {
+    console.error('Erro ao excluir o serviço:', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao excluir o serviço' });
+  }
+});
+
+// Configuração da rota para atualizar um serviço
+app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
+
+  try {
+    const id = req.params.id;
+
+    const { nome, descricao } = req.body;
+    const imagemBuffer = req.file ? req.file.buffer : undefined;
+    const nameFile = req.file ? req.file.originalname : undefined;
+
+    // Chama a função updateColaborador para atualizar um novo serviço
+    const upServicos = await updateColaborador(id, nome, descricao, imagemBuffer, nameFile);
+
+    // Retorna o novo serviço como resposta da requisição
+    res.json(upServicos);
+  } 
+  catch (error) 
+  {
+    console.error('Erro ao atualizar o serviço:', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao atualizar o serviço' });
+  }
+});
+
 
 
  
