@@ -7,7 +7,8 @@ const { getAdms,createAdm,deleteAdm,updateAdm,getAdmById,
 const { Login,verificarToken } = require('./controllers/controler_login');
 const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,getColaboradorById,
         createServicos,getAllServicos,deleteServicos,updateServicos,getServicoById,
-        createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById } = require('./controllers/controler_images');
+        createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById, 
+        deleteImageFromStorage } = require('./controllers/controler_images');
 //const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
 const app = express() 
 const jwt = require('jsonwebtoken');
@@ -519,6 +520,7 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
     
     // Retorna o serviço excluído como resposta da requisição
     res.json(dServico);
+    await deleteImageFromStorage(dServico.nome_arquivo_imagem);
 
   } 
   catch (error) 

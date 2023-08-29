@@ -302,7 +302,6 @@ const deleteServicos = async (id) => {
       if (result.rows.length === 0) {
         throw new Error('Serviço não encontrado.');
       }
-      await deleteImageFromStorage(imageFileName);
 
       // Libera a conexão de volta para o pool
       client.release();
@@ -573,5 +572,7 @@ module.exports = {
     getAllEbooks,
     deleteEbook,
     updateEbook,
-    getEbookById
+    getEbookById,
+
+    deleteImageFromStorage
 };
