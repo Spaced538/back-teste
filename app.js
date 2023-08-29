@@ -3,10 +3,11 @@ const cors = require('cors');
 const multer = require('multer');
 const { getAdms,createAdm,deleteAdm,updateAdm,getAdmById,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,getDepoimentoById,
-        getContact,createContact,deleteContact,updateContact, } = require('./controllers/controlers_tables');
+        getContact,createContact,deleteContact,getContactById, } = require('./controllers/controlers_tables');
 const { Login,verificarToken } = require('./controllers/controler_login');
-const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,
-        createServicos,getAllServicos,deleteServicos } = require('./controllers/controler_images');
+const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,getColaboradorById,
+        createServicos,getAllServicos,deleteServicos,updateServicos,getServicoById,
+        createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById } = require('./controllers/controler_images');
 //const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
 const app = express() 
 const jwt = require('jsonwebtoken');
@@ -335,27 +336,22 @@ app.delete('/contacts/:id', verificarToken, async (req, res) => {
   }
 });
 
-
-// Configuração da rota para atualizar um contato do cliente
-app.put('/contacts/:id', verificarToken, async (req, res) => {
-
+// Configuração da rota para obter um contato do cliente pelo ID
+app.get('/contacts/:id', async (req, res) => {
   try {
-
     const id = req.params.id;
-    const {nome,sobrenome,email,assunto} = req.body;
 
-    // Chama a função updateContact para atualizar o contato do cliente
-    await updateContact(id, nome, sobrenome, email, assunto);
+    // Chama a função getContactById para obter o contato do cliente pelo ID
+    const contato = await getContactById(id);
 
-    // Retorna uma resposta de sucesso
-    res.json({ message: 'Contato atualizado com sucesso' });
-
-  } 
-  catch (error) 
-  {
-    console.error('Erro ao atualizar o contato:', error);
-    // Retorna uma resposta de erro com status 500
-    res.status(500).json({ error: 'Erro ao atualizar o contato' });
+    if (contato) {
+      res.json(contato); // Retorna o contato do cliente encontrado como resposta
+    } else {
+      res.status(404).json({ error: 'Contato do cliente não encontrado.' }); // Retorna erro 404 se o contato do cliente não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar contato do cliente pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
 
@@ -448,18 +444,37 @@ app.put('/colaboradores/:id', upload.single('imagem'), async (req, res) => {
   }
 });
 
+// Configuração da rota para obter um colaborador pelo ID
+app.get('/colaboradores/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função getColaboradorById para obter o colaborador pelo ID
+    const colaborador = await getColaboradorById(id);
+
+    if (colaborador) {
+      res.json(colaborador); // Retorna o colaborador encontrado como resposta
+    } else {
+      res.status(404).json({ error: 'Colaborador não encontrado.' }); // Retorna erro 404 se o colaborador não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar colaborador pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 ////////////////////////
 
 app.post('/servicos/create', upload.single('imagem'), async (req, res) => {
   try {
-    const { nome, descricao } = req.body;
+    const { nome, preco } = req.body;
     const imagemBuffer = req.file.buffer;
 
     const nameFile = req.file.originalname;
 
     // Chama a função createColaborador para criar um novo Colaborador
-    const newServico = await createServicos(nome, descricao, imagemBuffer, nameFile);
+    const newServico = await createServicos(nome, preco, imagemBuffer, nameFile);
 
     // Retorna o novo Colaborador como resposta da requisição
     res.json(newServico);
@@ -520,12 +535,12 @@ app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
   try {
     const id = req.params.id;
 
-    const { nome, descricao } = req.body;
+    const { nome, preco } = req.body;
     const imagemBuffer = req.file ? req.file.buffer : undefined;
     const nameFile = req.file ? req.file.originalname : undefined;
 
     // Chama a função updateColaborador para atualizar um novo serviço
-    const upServicos = await updateColaborador(id, nome, descricao, imagemBuffer, nameFile);
+    const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
 
     // Retorna o novo serviço como resposta da requisição
     res.json(upServicos);
@@ -538,12 +553,36 @@ app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
   }
 });
 
+// Configuração da rota para obter um serviço pelo ID
+app.get('/servicos/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função getServicoById para obter o serviço pelo ID
+    const servico = await getServicoById(id);
+
+    if (servico) {
+      res.json(servico); // Retorna o serviço encontrado como resposta
+    } else {
+      res.status(404).json({ error: 'Serviço não encontrado.' }); // Retorna erro 404 se o serviço não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar serviço pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 /////////////////////////////////
 
-app.post('/ebooks/create', verificarToken, async (req, res) => {
+app.post('/ebooks/create', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
-    const { titulo, descricao} = req.body;
-    const { pdfBuffer, imagemBuffer } = req.file.buffer;
+    const id = req.params.id;
+
+    const { titulo, descricao } = req.body;
+    const pdfBuffer = req.files['pdf'] ? req.files['pdf'][0].buffer : undefined;
+    const pdfName = req.files['pdf'] ? req.files['pdf'][0].originalname : undefined;
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
   
     
     const novoEbook = await createEbook(titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
@@ -578,21 +617,42 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/ebooks/:id', verificarToken, async (req, res) => {
+app.put('/ebooks/:id', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
-    const { titulo, descricao} = req.body;
-    const { pdfBuffer, imagemBuffer } = req.file.buffer; 
 
-    const updatedEbook = await updateEbook(id, titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
+    const { titulo, descricao } = req.body;
+    const pdfBuffer = req.files['pdf'] ? req.files['pdf'][0].buffer : undefined;
+    const pdfName = req.files['pdf'] ? req.files['pdf'][0].originalname : undefined;
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
 
-    res.json(updatedEbook);
+    // Chama a função updateEbook para atualizar um novo Ebook
+    const upEbook = await updateEbook(id, titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
+
+    res.json(upEbook);
   } catch (error) {
     console.error('Erro ao atualizar ebook:', error);
     res.status(500).json({ error: 'Erro ao atualizar ebook' });
   }
 });
 
+app.get('/ebooks/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const ebook = await getEbookById(id);
+
+    if (ebook) {
+      res.json(ebook);
+    } else {
+      res.status(404).json({ error: 'Ebook não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar ebook pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
 
 
  

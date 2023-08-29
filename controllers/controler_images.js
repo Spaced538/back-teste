@@ -201,24 +201,47 @@ const updateColaborador = async (id, nome, funcao, imagemBuffer, nameFile) => {
         throw new Error('Erro ao atualizar colaborador.');
     }
 };
+
+const getColaboradorById = async (id) => {
+  try {
+    // Obtém uma conexão do pool
+    const client = await pool.connect();
+
+    // Executa a consulta para buscar o colaborador pelo ID
+    const queryResult = await client.query('SELECT * FROM colaborador WHERE id = $1', [id]);
+
+    // Libera a conexão de volta para o pool
+    client.release();
+
+    if (queryResult.rows.length > 0) {
+      // Retorna o colaborador encontrado como um objeto JSON
+      return JSON.stringify(queryResult.rows[0]);
+    } else {
+      return null; // Retorna null se o colaborador não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar colaborador pelo ID:', error);
+    throw error;
+  }
+};
   
 /////////////////////////////
 
-const createServicos = async (nome, descricao, imagemBuffer, nameFile) => {
+const createServicos = async (nome, preco, imagemBuffer, nameFile) => {
     try {
         const client = await pool.connect();
         const id = generateHexId(60); // Gere o ID usando a função generateHexId
         const newNameFile = `${Date.now()}_${nameFile}`;
         const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
     
-        const query = 'INSERT INTO servicos (id, nome, descrição, nome_arquivo_imagem, url_imagem) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-        const values = [id, nome, descricao, newNameFile, imageUrl];
+        const query = 'INSERT INTO servicos (id, nome, preço, nome_arquivo_imagem, url_imagem) VALUES ($1, $2, $3, $4, $5) RETURNING id';
+        const values = [id, nome, preco, newNameFile, imageUrl];
         const result = await client.query(query, values);
     
         const novoServico = {
             id: result.rows[0].id,
             nome,
-            descricao,
+            preco,
             url_imagem: imageUrl
         };
 
@@ -290,7 +313,7 @@ const deleteServicos = async (id) => {
     }
 };
 
-const updateServicos = async (id, nome, descricao, imagemBuffer, nameFile) => {
+const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
   try {
       const client = await pool.connect();
 
@@ -311,8 +334,8 @@ const updateServicos = async (id, nome, descricao, imagemBuffer, nameFile) => {
           const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
 
           // Atualizar as informações do colaborador no banco de dados
-          const updateQuery = 'UPDATE servicos SET nome = $2, descrição = $3, nome_arquivo_imagem = $4, url_imagem = $5 WHERE id = $1 RETURNING *';
-          const updateValues = [id, nome, descricao, newNameFile, imageUrl];
+          const updateQuery = 'UPDATE servicos SET nome = $2, preço = $3, nome_arquivo_imagem = $4, url_imagem = $5 WHERE id = $1 RETURNING *';
+          const updateValues = [id, nome, preco, newNameFile, imageUrl];
           const result = await client.query(updateQuery, updateValues);
 
           // Libera a conexão de volta para o pool
@@ -321,8 +344,8 @@ const updateServicos = async (id, nome, descricao, imagemBuffer, nameFile) => {
           return result.rows[0];
       } else {
           // Atualizar as informações do colaborador no banco de dados sem alterar a imagem
-          const updateQuery = 'UPDATE servicos SET nome = $2, descrição = $3 WHERE id = $1 RETURNING *';
-          const updateValues = [id, nome, descricao];
+          const updateQuery = 'UPDATE servicos SET nome = $2, preço = $3 WHERE id = $1 RETURNING *';
+          const updateValues = [id, nome, preco];
           const result = await client.query(updateQuery, updateValues);
           
           // Libera a conexão de volta para o pool
@@ -333,6 +356,29 @@ const updateServicos = async (id, nome, descricao, imagemBuffer, nameFile) => {
   } catch (error) {
       console.error(error);
       throw new Error('Erro ao atualizar colaborador.');
+  }
+};
+
+const getServicoById = async (id) => {
+  try {
+    // Obtém uma conexão do pool
+    const client = await pool.connect();
+
+    // Executa a consulta para buscar o serviço pelo ID
+    const queryResult = await client.query('SELECT * FROM servicos WHERE id = $1', [id]);
+
+    // Libera a conexão de volta para o pool
+    client.release();
+
+    if (queryResult.rows.length > 0) {
+      // Retorna o serviço encontrado como um objeto JSON
+      return JSON.stringify(queryResult.rows[0]);
+    } else {
+      return null; // Retorna null se o serviço não for encontrado
+    }
+  } catch (error) {
+    console.error('Erro ao buscar serviço pelo ID:', error);
+    throw error;
   }
 };
 
@@ -483,6 +529,25 @@ const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuff
   }
 };
 
+const getEbookById = async (id) => {
+  try {
+    const client = await pool.connect();
+
+    const queryResult = await client.query('SELECT * FROM ebooks WHERE id = $1', [id]);
+
+    client.release();
+
+    if (queryResult.rows.length > 0) {
+      return JSON.stringify(queryResult.rows[0]);
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Erro ao buscar ebook pelo ID:', error);
+    throw error;
+  }
+};
+
   
   
 
@@ -495,14 +560,17 @@ module.exports = {
     getAllColaboradores,
     deleteColaborador,
     updateColaborador,
+    getColaboradorById,
 
     createServicos,
     getAllServicos,
     deleteServicos,
     updateServicos,
+    getServicoById,
 
     createEbook,
     getAllEbooks,
     deleteEbook,
-    updateEbook
+    updateEbook,
+    getEbookById
 };
