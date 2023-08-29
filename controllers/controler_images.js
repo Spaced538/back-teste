@@ -396,7 +396,7 @@ const deleteEbook = async (id) => {
   try {
     const client = await pool.connect();
 
-    const getFilesInfoQuery = 'SELECT nome_arquivo_pdf, nome_arquivo_imagem FROM Ebooks WHERE id = $1';
+    const getFilesInfoQuery = 'SELECT nome_arquivo_pdf, nome_arquivo_imagem FROM ebooks WHERE id = $1';
     const getFilesInfoResult = await client.query(getFilesInfoQuery, [id]);
 
     if (getFilesInfoResult.rows.length === 0) {
@@ -409,7 +409,7 @@ const deleteEbook = async (id) => {
     await deletePDFFromStorage(pdfFileName);
     await deleteImageFromStorage(imageFileName);
 
-    const deleteQuery = 'DELETE FROM Ebooks WHERE id = $1 RETURNING *';
+    const deleteQuery = 'DELETE FROM ebooks WHERE id = $1 RETURNING *';
     const result = await client.query(deleteQuery, [id]);
 
     if (result.rows.length === 0) {
@@ -429,7 +429,7 @@ const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuff
   try {
     const client = await pool.connect();
 
-    const checkEbookQuery = 'SELECT * FROM Ebooks WHERE id = $1';
+    const checkEbookQuery = 'SELECT * FROM ebooks WHERE id = $1';
     const checkEbookResult = await client.query(checkEbookQuery, [id]);
 
     if (checkEbookResult.rows.length === 0) {

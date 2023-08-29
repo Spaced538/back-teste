@@ -137,6 +137,25 @@ app.put('/adms/:id', verificarToken, async (req, res) => {
   }
 });
 
+// Configuração da rota para buscar as informações de um administrador pelo ID
+app.get('/adms/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função getAdmById para buscar as informações do administrador pelo ID
+    const admInfo = await getAdmById(id);
+
+    if (admInfo) {
+      res.json(JSON.parse(admInfo)); // Envia as informações do administrador como resposta
+    } else {
+      res.status(404).json({ error: 'Administrador não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar as informações do administrador:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 ////////////////////////
 
 app.get('/depoiments', async (req, res) => {
