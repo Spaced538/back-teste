@@ -1,4 +1,5 @@
 const { pool } = require('../service/conectionDb/service');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 function generateHexId(length) {
@@ -32,22 +33,25 @@ const getAdms = async () => {
 
 const createAdm = async (usuario, email, senha) => {
   try {
-    // Verifica se já existe um uadm com o email fornecido
+    // Verifica se já existe um adm com o email fornecido
     const existingUser = await pool.query('SELECT * FROM adm WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       throw new Error('Já existe um usuário com esse email.');
     }
 
-    // Obtém uma conexão do pool
-    const client = await pool.connect();
-
     // Gera um novo ID hexadecimal
     const id = generateHexId(60);
+
+    // Criptografa a senha antes de armazená-la no banco de dados
+    const hashedSenha = await bcrypt.hash(senha, 10); // O segundo argumento é o número de salt rounds
+
+    // Obtém uma conexão do pool
+    const client = await pool.connect();
 
     // Executa a consulta para inserir um novo adm com o ID gerado
     const queryResult = await client.query(
       'INSERT INTO adm (ID, USUARIO, EMAIL, SENHA) VALUES ($1, $2, $3, $4) RETURNING *',
-      [id, usuario, email, senha]
+      [id, usuario, email, hashedSenha]
     );
 
     // Obtém o adm criado
