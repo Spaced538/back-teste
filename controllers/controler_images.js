@@ -417,7 +417,7 @@ const createEbook = async (titulo, descricao, pdfBuffer, pdfName, imagemBuffer, 
     const pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
     const imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
 
-    const query = 'INSERT INTO Ebooks (id, titulo, descrição, url_pdf, url_imagem, nome_arquivo_pdf, nome_arquivo_imagem) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+    const query = 'INSERT INTO Ebooks (id, titulo, descricao, url_pdf, url_imagem, nome_arquivo_pdf, nome_arquivo_imagem) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
     const values = [id, titulo, descricao, pdfUrl, imageUrl, newPdfName, newImageName];
     const result = await client.query(query, values);
 
@@ -530,7 +530,7 @@ const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuff
         existingEbook.nome_arquivo_imagem = newImageName;
       }
 
-      const updateQuery = 'UPDATE ebooks SET itulo = $2, descrição = $3, url_PDF = $4, nome_arquivo_pdf = $5, url_imagem = $6, nome_arquivo_imagem = $7 WHERE id = $1 RETURNING *';
+      const updateQuery = 'UPDATE ebooks SET itulo = $2, descricao = $3, url_PDF = $4, nome_arquivo_pdf = $5, url_imagem = $6, nome_arquivo_imagem = $7 WHERE id = $1 RETURNING *';
       const updateValues = [id, titulo, descricao, existingEbook.url_PDF, existingEbook.nome_arquivo_pdf, existingEbook.url_imagem, existingEbook.nome_arquivo_imagem];
       const result = await client.query(updateQuery, updateValues);
 
