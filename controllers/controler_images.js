@@ -234,7 +234,7 @@ const createServicos = async (nome, preco, imagemBuffer, nameFile) => {
         const newNameFile = `${Date.now()}_${nameFile}`;
         const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
     
-        const query = 'INSERT INTO servicos (id, nome, preço, nome_arquivo_imagem, url_imagem) VALUES ($1, $2, $3, $4, $5) RETURNING id';
+        const query = 'INSERT INTO servicos (id, nome, preco, nome_arquivo_imagem, url_imagem) VALUES ($1, $2, $3, $4, $5) RETURNING id';
         const values = [id, nome, preco, newNameFile, imageUrl];
         const result = await client.query(query, values);
     
@@ -334,7 +334,7 @@ const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
           const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
 
           // Atualizar as informações do colaborador no banco de dados
-          const updateQuery = 'UPDATE servicos SET nome = $2, preço = $3, nome_arquivo_imagem = $4, url_imagem = $5 WHERE id = $1 RETURNING *';
+          const updateQuery = 'UPDATE servicos SET nome = $2, preco = $3, nome_arquivo_imagem = $4, url_imagem = $5 WHERE id = $1 RETURNING *';
           const updateValues = [id, nome, preco, newNameFile, imageUrl];
           const result = await client.query(updateQuery, updateValues);
 
@@ -344,7 +344,7 @@ const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
           return result.rows[0];
       } else {
           // Atualizar as informações do colaborador no banco de dados sem alterar a imagem
-          const updateQuery = 'UPDATE servicos SET nome = $2, preço = $3 WHERE id = $1 RETURNING *';
+          const updateQuery = 'UPDATE servicos SET nome = $2, preco = $3 WHERE id = $1 RETURNING *';
           const updateValues = [id, nome, preco];
           const result = await client.query(updateQuery, updateValues);
           
