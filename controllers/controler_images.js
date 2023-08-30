@@ -475,6 +475,9 @@ const deleteEbook = async (id) => {
     const pdfFileName = getFilesInfoResult.rows[0].nome_arquivo_pdf;
     const imageFileName = getFilesInfoResult.rows[0].nome_arquivo_imagem;
 
+    await deletePDFFromStorage(pdfFileName);
+    await deleteImageFromStorage(imageFileName);
+
     const deleteQuery = 'DELETE FROM ebooks WHERE id = $1 RETURNING *';
     const result = await client.query(deleteQuery, [id]);
 
