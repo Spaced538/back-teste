@@ -481,10 +481,6 @@ const deleteEbook = async (id) => {
       throw new Error('Ebook não encontrado.');
     }
 
-    // const pdfFileName = getFilesInfoResult.rows[0].nome_arquivo_pdf;
-    // const imageFileName = getFilesInfoResult.rows[0].nome_arquivo_imagem;
-    
-
     const deleteQuery = 'DELETE FROM ebooks WHERE id = $1 RETURNING *';
     const result = await client.query(deleteQuery, [id]);
 
