@@ -259,7 +259,7 @@ app.get('/depoimentos/:id', async (req, res) => {
     const depoimento = await getDepoimentoById(id);
 
     if (depoimento) {
-      res.json(depoimento); // Retorna o depoimento encontrado como resposta
+      res.json(JSON.parse(depoimento)); // Retorna o depoimento encontrado como resposta
     } else {
       res.status(404).json({ error: 'Depoimento não encontrado.' }); // Retorna erro 404 se o depoimento não for encontrado
     }
