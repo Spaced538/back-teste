@@ -614,6 +614,11 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
     const deletedEbook = await deleteEbook(id);
 
     res.json(deletedEbook);
+
+    await deletePDFFromStorage(deletedEbook.nome_arquivo_pdf);
+    await deleteImageFromStorage(deletedEbook.nome_arquivo_imagem);
+
+
   } catch (error) {
     console.error('Erro ao excluir ebook:', error);
     res.status(500).json({ error: 'Erro ao excluir ebook' });
