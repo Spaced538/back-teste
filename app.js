@@ -532,25 +532,26 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
 });
 
 app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
-
   try {
-    const id = req.params.id;
+      const id = req.params.id;
 
-    const { nome, preco } = req.body;
-    const imagemBuffer =  req.file.buffer ;
-    const nameFile =  req.file.originalname;
+      const { nome, preco } = req.body;
 
-    // Chama a função updateColaborador para atualizar um novo serviço
-    const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
+      let imagemBuffer, nameFile;
+      if (req.file) {
+          imagemBuffer = req.file.buffer;
+          nameFile = req.file.originalname;
+      }
 
-    // Retorna o novo serviço como resposta da requisição
-    res.json(upServicos);
-  } 
-  catch (error) 
-  {
-    console.error('Erro ao atualizar o serviço:', error);
-    // Retorna uma resposta de erro com status 500
-    res.status(500).json({ error: 'Erro ao atualizar o serviço' });
+      // Chama a função updateServicos para atualizar um novo serviço
+      const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
+
+      // Retorna o novo serviço como resposta da requisição
+      res.json(upServicos);
+  } catch (error) {
+      console.error('Erro ao atualizar o serviço:', error);
+      // Retorna uma resposta de erro com status 500
+      res.status(500).json({ error: 'Erro ao atualizar o serviço' });
   }
 });
 

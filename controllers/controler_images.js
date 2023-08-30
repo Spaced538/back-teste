@@ -317,45 +317,56 @@ const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
   try {
       const client = await pool.connect();
 
-      // Verifique se o servoço existir existe
-      const checkColaboradorQuery = 'SELECT * FROM servicos WHERE id = $1';
-      const checkColaboradorResult = await client.query(checkColaboradorQuery, [id]);
+      // Verifique se o serviço existe
+      const checkServicoQuery = 'SELECT * FROM servicos WHERE id = $1';
+      const checkServicoResult = await client.query(checkServicoQuery, [id]);
 
-      if (checkColaboradorResult.rows.length === 0) {
+      if (checkServicoResult.rows.length === 0) {
           throw new Error('Serviço não encontrado.');
       }
 
-      // Se uma nova imagem foi fornecida, exclua a imagem existente e faça upload da nova
+      const existingData = checkServicoResult.rows[0]; // Dados existentes do serviço
+
+      let updateQuery = 'UPDATE servicos SET';
+      const updateValues = [id];
+
+      // Verifique e adicione os campos a serem atualizados
+      if (nome !== undefined) {
+          updateQuery += ' nome = $2,';
+          updateValues.push(nome);
+      }
+
+      if (preco !== undefined) {
+          updateQuery += ' preco = $' + (updateValues.length + 1) + ',';
+          updateValues.push(preco);
+      }
+
       if (imagemBuffer) {
-          const imageFileName = checkColaboradorResult.rows[0].nome_arquivo_imagem;
+          const imageFileName = existingData.nome_arquivo_imagem;
           await deleteImageFromStorage(imageFileName);
 
           const newNameFile = `${Date.now()}_${nameFile}`;
           const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
 
-          // Atualizar as informações do colaborador no banco de dados
-          const updateQuery = 'UPDATE servicos SET nome = $2, preco = $3, nome_arquivo_imagem = $4, url_imagem = $5 WHERE id = $1 RETURNING *';
-          const updateValues = [id, nome, preco, newNameFile, imageUrl];
-          const result = await client.query(updateQuery, updateValues);
-
-          // Libera a conexão de volta para o pool
-          client.release();
-
-          return result.rows[0];
-      } else {
-          // Atualizar as informações do colaborador no banco de dados sem alterar a imagem
-          const updateQuery = 'UPDATE servicos SET nome = $2, preco = $3 WHERE id = $1 RETURNING *';
-          const updateValues = [id, nome, preco];
-          const result = await client.query(updateQuery, updateValues);
-          
-          // Libera a conexão de volta para o pool
-          client.release();
-
-          return result.rows[0];
+          updateQuery += ' nome_arquivo_imagem = $' + (updateValues.length + 1) + ',';
+          updateQuery += ' url_imagem = $' + (updateValues.length + 2);
+          updateValues.push(newNameFile, imageUrl);
       }
+
+      // Remova a última vírgula, se houver, e adicione a cláusula WHERE
+      updateQuery = updateQuery.replace(/,$/, '') + ' WHERE id = $1 RETURNING *';
+
+      // Execute a consulta de atualização
+      const result = await client.query(updateQuery, updateValues);
+
+      // Libera a conexão de volta para o pool
+      client.release();
+
+      return result.rows[0];
+
   } catch (error) {
       console.error(error);
-      throw new Error('Erro ao atualizar colaborador.');
+      throw new Error('Erro ao atualizar serviço.');
   }
 };
 
