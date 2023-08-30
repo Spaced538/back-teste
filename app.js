@@ -536,8 +536,12 @@ app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
       const id = req.params.id;
 
       const { nome, preco } = req.body;
-      const imagemBuffer = req.file ? req.file.buffer : undefined;
-      const nameFile = req.file ? req.file.originalname : undefined;
+      let imagemBuffer, nameFile;
+
+      if (req.file) {
+          imagemBuffer = req.file.buffer;
+          nameFile = req.file.originalname;
+      }
 
       // Chama a função updateServicos para atualizar um novo serviço
       const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
@@ -610,6 +614,8 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
     const deletedEbook = await deleteEbook(id);
 
     res.json(deletedEbook);
+    await deletePDFFromStorage(pdfFileName);
+    await deleteImageFromStorage(imageFileName);
   } catch (error) {
     console.error('Erro ao excluir ebook:', error);
     res.status(500).json({ error: 'Erro ao excluir ebook' });

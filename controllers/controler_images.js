@@ -343,7 +343,7 @@ const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
       const queryParams = [id];
 
       if (nome !== undefined) {
-          updateClause += 'NOME = $2';
+          updateClause = 'NOME = $2';
           queryParams.push(nome);
       }
 
@@ -474,9 +474,6 @@ const deleteEbook = async (id) => {
 
     const pdfFileName = getFilesInfoResult.rows[0].nome_arquivo_pdf;
     const imageFileName = getFilesInfoResult.rows[0].nome_arquivo_imagem;
-
-    await deletePDFFromStorage(pdfFileName);
-    await deleteImageFromStorage(imageFileName);
 
     const deleteQuery = 'DELETE FROM ebooks WHERE id = $1 RETURNING *';
     const result = await client.query(deleteQuery, [id]);
