@@ -531,15 +531,14 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
   }
 });
 
-// Configuração da rota para atualizar um serviço
 app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
 
   try {
     const id = req.params.id;
 
     const { nome, preco } = req.body;
-    const imagemBuffer = req.file ? req.file.buffer : undefined;
-    const nameFile = req.file ? req.file.originalname : undefined;
+    const imagemBuffer =  req.file.buffer ;
+    const nameFile =  req.file.originalname;
 
     // Chama a função updateColaborador para atualizar um novo serviço
     const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
