@@ -409,34 +409,42 @@ const getServicoById = async (id) => {
 
 const createEbook = async (titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName) => {
   try {
-    const client = await pool.connect();
-    const id = generateHexId(60);
-    const newPdfName = `${Date.now()}_${pdfName}`;
-    const newImageName = `${Date.now()}_${imageName}`;
-    
-    const pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
-    const imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
+      const client = await pool.connect();
+      const id = generateHexId(60);
+      let newPdfName, newImageName, pdfUrl, imageUrl;
 
-    const query = 'INSERT INTO Ebooks (id, titulo, descricao, url_pdf, url_imagem, nome_arquivo_pdf, nome_arquivo_imagem) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
-    const values = [id, titulo, descricao, pdfUrl, imageUrl, newPdfName, newImageName];
-    const result = await client.query(query, values);
+      if (pdfBuffer && pdfName) {
+          newPdfName = `${Date.now()}_${pdfName}`;
+          pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
+      }
 
-    const novoEbook = {
-      id: result.rows[0].id,
-      titulo,
-      descricao,
-      url_PDF: pdfUrl,
-      url_imagem: imageUrl
-    };
+      if (imagemBuffer && imageName) {
+          newImageName = `${Date.now()}_${imageName}`;
+          imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
+      }
 
-    client.release();
-  
-    return novoEbook;
+      const query = 'INSERT INTO Ebooks (id, titulo, descricao, url_pdf, url_imagem, nome_arquivo_pdf, nome_arquivo_imagem) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+      const values = [id, titulo, descricao, pdfUrl, imageUrl, newPdfName, newImageName];
+      const result = await client.query(query, values);
+
+      const novoEbook = {
+          id: result.rows[0].id,
+          titulo,
+          descricao,
+          url_PDF: pdfUrl,
+          url_imagem: imageUrl
+      };
+
+      client.release();
+
+      return novoEbook;
   } catch (error) {
-    console.error(error);
-    throw new Error('Erro ao criar ebook.');
+      console.error(error);
+      throw new Error('Erro ao criar ebook.');
   }
 };
+
+
 
 const getAllEbooks = async () => {
   try {
@@ -467,16 +475,15 @@ const deleteEbook = async (id) => {
 
     const getFilesInfoQuery = 'SELECT nome_arquivo_pdf, nome_arquivo_imagem FROM ebooks WHERE id = $1';
     const getFilesInfoResult = await client.query(getFilesInfoQuery, [id]);
+    console.log(getFilesInfoResult);
 
     if (getFilesInfoResult.rows.length === 0) {
       throw new Error('Ebook não encontrado.');
     }
 
-    const pdfFileName = getFilesInfoResult.rows[0].nome_arquivo_pdf;
-    const imageFileName = getFilesInfoResult.rows[0].nome_arquivo_imagem;
-
-    await deletePDFFromStorage(pdfFileName);
-    await deleteImageFromStorage(imageFileName);
+    // const pdfFileName = getFilesInfoResult.rows[0].nome_arquivo_pdf;
+    // const imageFileName = getFilesInfoResult.rows[0].nome_arquivo_imagem;
+    
 
     const deleteQuery = 'DELETE FROM ebooks WHERE id = $1 RETURNING *';
     const result = await client.query(deleteQuery, [id]);

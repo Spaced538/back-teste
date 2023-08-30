@@ -579,23 +579,30 @@ app.get('/servicos/:id', async (req, res) => {
 
 app.post('/ebooks/create', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
-    const id = req.params.id;
+      const id = req.params.id;
+      const { titulo, descricao } = req.body;
+      let pdfBuffer, pdfName, imagemBuffer, imageName;
 
-    const { titulo, descricao } = req.body;
-    const pdfBuffer = req.files['pdf'] ? req.files['pdf'][0].buffer : undefined;
-    const pdfName = req.files['pdf'] ? req.files['pdf'][0].originalname : undefined;
-    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
-    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
-  
-    
-    const novoEbook = await createEbook(titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
-    
-    res.json(novoEbook);
+      if (req.files['pdf'] && req.files['pdf'][0]) {
+          pdfBuffer = req.files['pdf'][0].buffer;
+          pdfName = req.files['pdf'][0].originalname;
+      }
+
+      if (req.files['imagem'] && req.files['imagem'][0]) {
+          imagemBuffer = req.files['imagem'][0].buffer;
+          imageName = req.files['imagem'][0].originalname;
+      }
+
+      const novoEbook = await createEbook(titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
+
+      res.json(novoEbook);
   } catch (error) {
-    console.error('Erro ao criar um novo ebook:', error);
-    res.status(500).json({ error: 'Erro ao criar um novo ebook' });
+      console.error('Erro ao criar um novo ebook:', error);
+      res.status(500).json({ error: 'Erro ao criar um novo ebook' });
   }
 });
+
+
 
 app.get('/ebooks', async (req, res) => {
   try {
@@ -614,6 +621,9 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
     const deletedEbook = await deleteEbook(id);
 
     res.json(deletedEbook);
+    
+    await deletePDFFromStorage(deletedEbook.nome_arquivo_pdf);
+    await deleteImageFromStorage(deletedEbook.nome_arquivo_imagem);
   } catch (error) {
     console.error('Erro ao excluir ebook:', error);
     res.status(500).json({ error: 'Erro ao excluir ebook' });
