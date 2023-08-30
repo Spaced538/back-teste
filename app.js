@@ -573,7 +573,7 @@ app.get('/servicos/:id', async (req, res) => {
 
 /////////////////////////////////
 
-app.post('/ebooks/create', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.post('/ebooks/create', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -593,7 +593,7 @@ app.post('/ebooks/create', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 
   }
 });
 
-app.get('/ebooks', verificarToken, async (req, res) => {
+app.get('/ebooks', async (req, res) => {
   try {
     const ebooks = await getAllEbooks();
 
@@ -616,7 +616,7 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/ebooks/:id', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/ebooks/:id', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
