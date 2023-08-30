@@ -8,7 +8,7 @@ const { Login,verificarToken } = require('./controllers/controler_login');
 const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,getColaboradorById,
         createServicos,getAllServicos,deleteServicos,updateServicos,getServicoById,
         createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById, 
-        deleteImageFromStorage } = require('./controllers/controler_images');
+        deleteImageFromStorage,deletePDFFromStorage } = require('./controllers/controler_images');
 //const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
 const app = express() 
 const jwt = require('jsonwebtoken');
@@ -613,14 +613,16 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
     const id = req.params.id;
     const deletedEbook = await deleteEbook(id);
 
+    await deletePDFFromStorage(deletedEbook.nome_arquivo_pdf);
+    await deleteImageFromStorage(deletedEbook.nome_arquivo_imagem);
+
     res.json(deletedEbook);
-    await deletePDFFromStorage(deletedEbook.pdfFileName);
-    await deleteImageFromStorage(deletedEbook.imageFileName);
   } catch (error) {
     console.error('Erro ao excluir ebook:', error);
     res.status(500).json({ error: 'Erro ao excluir ebook' });
   }
 });
+
 
 app.put('/ebooks/:id', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
