@@ -536,12 +536,8 @@ app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
       const id = req.params.id;
 
       const { nome, preco } = req.body;
-
-      let imagemBuffer, nameFile;
-      if (req.file) {
-          imagemBuffer = req.file.buffer;
-          nameFile = req.file.originalname;
-      }
+      const imagemBuffer = req.file ? req.file.buffer : undefined;
+      const nameFile = req.file ? req.file.originalname : undefined;
 
       // Chama a função updateServicos para atualizar um novo serviço
       const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
@@ -554,6 +550,7 @@ app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
       res.status(500).json({ error: 'Erro ao atualizar o serviço' });
   }
 });
+
 
 // Configuração da rota para obter um serviço pelo ID
 app.get('/servicos/:id', async (req, res) => {

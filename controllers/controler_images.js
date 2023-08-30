@@ -327,48 +327,60 @@ const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
 
       const existingData = checkServicoResult.rows[0]; // Dados existentes do serviço
 
-      let updateQuery = 'UPDATE servicos SET';
-      const updateValues = [id];
-
-      // Verifique e adicione os campos a serem atualizados
-      if (nome !== undefined) {
-          updateQuery += ' nome = $2,';
-          updateValues.push(nome);
-      }
-
-      if (preco !== undefined) {
-          updateQuery += ' preco = $' + (updateValues.length + 1) + ',';
-          updateValues.push(preco);
-      }
+      let newNameFile = existingData.nome_arquivo_imagem;
+      let imageUrl = existingData.url_imagem;
 
       if (imagemBuffer) {
           const imageFileName = existingData.nome_arquivo_imagem;
           await deleteImageFromStorage(imageFileName);
 
-          const newNameFile = `${Date.now()}_${nameFile}`;
-          const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
-
-          updateQuery += ' nome_arquivo_imagem = $' + (updateValues.length + 1) + ',';
-          updateQuery += ' url_imagem = $' + (updateValues.length + 2);
-          updateValues.push(newNameFile, imageUrl);
+          newNameFile = `${Date.now()}_${nameFile}`;
+          imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
       }
 
-      // Remova a última vírgula, se houver, e adicione a cláusula WHERE
-      updateQuery = updateQuery.replace(/,$/, '') + ' WHERE id = $1 RETURNING *';
+      // Constrói a parte da consulta que será modificada de acordo com os valores fornecidos
+      let updateClause = '';
+      const queryParams = [id];
 
-      // Execute a consulta de atualização
-      const result = await client.query(updateQuery, updateValues);
+      if (nome !== undefined) {
+          updateClause += 'NOME = $2';
+          queryParams.push(nome);
+      }
+
+      if (preco !== undefined) {
+          if (updateClause !== '') {
+              updateClause += ', ';
+          }
+          updateClause += 'PRECO = $' + (queryParams.length + 1);
+          queryParams.push(preco);
+      }
+
+      if (imageUrl !== undefined && newNameFile !== undefined) {
+          if (updateClause !== '') {
+              updateClause += ', ';
+          }
+          updateClause += 'NOME_ARQUIVO_IMAGEM = $' + (queryParams.length + 1);
+          updateClause += ', URL_IMAGEM = $' + (queryParams.length + 2);
+          queryParams.push(newNameFile, imageUrl);
+      }
+
+      // Executa a consulta para atualizar o Serviço
+      const query = 'UPDATE servicos SET ' + updateClause + ' WHERE ID = $1 RETURNING *';
+      const queryResult = await client.query(query, queryParams);
+
+      // Obtém o Serviço atualizado
+      const updatedServico = queryResult.rows[0];
 
       // Libera a conexão de volta para o pool
       client.release();
 
-      return result.rows[0];
-
+      return updatedServico; // Retorna o serviço atualizado
   } catch (error) {
-      console.error(error);
-      throw new Error('Erro ao atualizar serviço.');
+      console.error('Erro ao atualizar o serviço:', error);
+      throw error; // Relança o erro para tratamento posterior
   }
 };
+
 
 const getServicoById = async (id) => {
   try {
