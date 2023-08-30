@@ -564,7 +564,7 @@ app.get('/servicos/:id', async (req, res) => {
     const servico = await getServicoById(id);
 
     if (servico) {
-      res.json(servico); // Retorna o serviço encontrado como resposta
+      res.json(JSON.parse(servico)); // Retorna o serviço encontrado como resposta
     } else {
       res.status(404).json({ error: 'Serviço não encontrado.' }); // Retorna erro 404 se o serviço não for encontrado
     }
