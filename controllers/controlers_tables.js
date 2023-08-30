@@ -258,7 +258,7 @@ const updateDepoiments = async (id, nome, texto) => {
       if (updateClause !== '') {
         updateClause += ', ';
       }
-      updateClause += 'TEXTO = $' + (updateClause.length + 2);
+      updateClause += 'TEXTO = $' + (queryParams.length + 1); // Correção aqui
       queryParams.push(texto);
     }
 
@@ -275,6 +275,7 @@ const updateDepoiments = async (id, nome, texto) => {
     return updatedDepoiment; // Retorna o depoimento atualizado
   } catch (error) {
     console.error('Erro ao atualizar o depoimento:', error);
+    throw error; // Lembre-se de relançar o erro para que ele possa ser tratado fora da função
   }
 };
 
