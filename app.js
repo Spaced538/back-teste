@@ -665,7 +665,7 @@ app.get('/ebooks/:id', async (req, res) => {
     const ebook = await getEbookById(id);
 
     if (ebook) {
-      res.json(ebook);
+      res.json(JSON.parse(ebook));
     } else {
       res.status(404).json({ error: 'Ebook não encontrado.' });
     }
