@@ -533,28 +533,35 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
 
 app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
   try {
-      const id = req.params.id;
+    const id = req.params.id;
 
-      const { nome, preco } = req.body;
-      let imagemBuffer, nameFile;
+    const { nome, preco } = req.body;
+    let imagemBuffer, nameFile;
 
-      if (req.file) {
-          imagemBuffer = req.file.buffer;
-          nameFile = req.file.originalname;
-      }
+    if (req.file) {
+      imagemBuffer = req.file.buffer;
+      nameFile = req.file.originalname;
+    }
 
-      // Chama a função updateServicos para atualizar um novo serviço
-      const upServicos = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
+    // Crie um objeto com os campos que você deseja atualizar, incluindo a imagem
+    const updates = {
+      nome,
+      preco,
+      imagemBuffer,
+      nameFile
+    };
 
-      // Retorna o novo serviço como resposta da requisição
-      res.json(upServicos);
+    // Chama a função updateServico para atualizar o serviço com as atualizações fornecidas
+    const updatedService = await updateServicos(id, updates);
+
+    // Retorna o serviço atualizado como resposta da requisição
+    res.json(updatedService);
   } catch (error) {
-      console.error('Erro ao atualizar o serviço:', error);
-      // Retorna uma resposta de erro com status 500
-      res.status(500).json({ error: 'Erro ao atualizar o serviço' });
+    console.error('Erro ao atualizar o serviço:', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao atualizar o serviço' });
   }
 });
-
 
 // Configuração da rota para obter um serviço pelo ID
 app.get('/servicos/:id', async (req, res) => {

@@ -313,71 +313,62 @@ const deleteServicos = async (id) => {
     }
 };
 
-const updateServicos = async (id, nome, preco, imagemBuffer, nameFile) => {
+const updateServicos = async (id, updates) => {
   try {
-      const client = await pool.connect();
+    const client = await pool.connect();
 
-      // Verifique se o serviço existe
-      const checkServicoQuery = 'SELECT * FROM servicos WHERE id = $1';
-      const checkServicoResult = await client.query(checkServicoQuery, [id]);
+    // Obtenha os dados atuais do serviço
+    const getCurrentDataQuery = 'SELECT * FROM servicos WHERE id = $1';
+    const getCurrentDataResult = await client.query(getCurrentDataQuery, [id]);
 
-      if (checkServicoResult.rows.length === 0) {
-          throw new Error('Serviço não encontrado.');
-      }
+    if (getCurrentDataResult.rows.length === 0) {
+      throw new Error('Serviço não encontrado.');
+    }
 
-      const existingData = checkServicoResult.rows[0]; // Dados existentes do serviço
+    const currentData = getCurrentDataResult.rows[0];
 
-      let newNameFile = existingData.nome_arquivo_imagem;
-      let imageUrl = existingData.url_imagem;
+    // Combine os dados atuais com as atualizações, mantendo os valores originais se não forem fornecidos
+    const updatedData = {
+      nome: updates.nome || currentData.nome,
+      preco: updates.preco || currentData.preco,
+      nome_arquivo_imagem: currentData.nome_arquivo_imagem,
+      url_imagem: currentData.url_imagem
+    };
 
-      if (imagemBuffer) {
-          const imageFileName = existingData.nome_arquivo_imagem;
-          await deleteImageFromStorage(imageFileName);
+    if (updates.imagemBuffer && updates.nameFile) {
+      const newNameFile = `${Date.now()}_${updates.nameFile}`;
+      const imageUrl = await uploadImageToStorage(updates.imagemBuffer, newNameFile);
+      updatedData.nome_arquivo_imagem = newNameFile;
+      updatedData.url_imagem = imageUrl;
+    }
 
-          newNameFile = `${Date.now()}_${nameFile}`;
-          imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
-      }
+    // Atualize os dados no banco de dados
+    const updateQuery = `
+      UPDATE servicos
+      SET nome = $1, preco = $2, nome_arquivo_imagem = $3, url_imagem = $4
+      WHERE id = $5
+      RETURNING *
+    `;
+    const updateValues = [
+      updatedData.nome,
+      updatedData.preco,
+      updatedData.nome_arquivo_imagem,
+      updatedData.url_imagem,
+      id
+    ];
+    const updateResult = await client.query(updateQuery, updateValues);
 
-      // Constrói a parte da consulta que será modificada de acordo com os valores fornecidos
-      let updateClause = '';
-      const queryParams = [id];
+    // Libere a conexão de volta para o pool
+    client.release();
 
-      if (nome !== undefined) {
-          updateClause = 'NOME = $2';
-          queryParams.push(nome);
-      }
+    if (updateResult.rows.length === 0) {
+      throw new Error('Falha ao atualizar serviço.');
+    }
 
-      if (preco !== undefined) {
-          if (updateClause !== '') {
-              updateClause += ', ';
-          }
-          updateClause += 'PRECO = $' + (queryParams.length + 1);
-          queryParams.push(preco);
-      }
-
-      if (imageUrl !== undefined && newNameFile !== undefined) {
-          if (updateClause !== '') {
-              updateClause += ', ';
-          }
-          updateClause += 'NOME_ARQUIVO_IMAGEM = $' + (queryParams.length + 1);
-          updateClause += ', URL_IMAGEM = $' + (queryParams.length + 2);
-          queryParams.push(newNameFile, imageUrl);
-      }
-
-      // Executa a consulta para atualizar o Serviço
-      const query = 'UPDATE servicos SET ' + updateClause + ' WHERE ID = $1 RETURNING *';
-      const queryResult = await client.query(query, queryParams);
-
-      // Obtém o Serviço atualizado
-      const updatedServico = queryResult.rows[0];
-
-      // Libera a conexão de volta para o pool
-      client.release();
-
-      return updatedServico; // Retorna o serviço atualizado
+    return updateResult.rows[0];
   } catch (error) {
-      console.error('Erro ao atualizar o serviço:', error);
-      throw error; // Relança o erro para tratamento posterior
+    console.error(error);
+    throw new Error('Erro ao atualizar serviço.');
   }
 };
 
