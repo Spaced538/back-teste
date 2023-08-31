@@ -677,7 +677,7 @@ app.get('/ebooks/:id', async (req, res) => {
 
 ////////////////////////////////////
 
-app.post('/blog/create', upload.single('imagem'), async (req, res) => {
+app.post('/blog/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { titulo, texto } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -726,7 +726,7 @@ app.delete('/blog/:id', verificarToken, async (req, res) => {
 });
 
 // Rota para atualizar um post do blog
-app.put('/blog/:id', upload.single('imagem'), async (req, res) => {
+app.put('/blog/:id', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const id = req.params.id;
     const { titulo, texto } = req.body;
