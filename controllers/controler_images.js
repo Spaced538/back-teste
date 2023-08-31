@@ -490,59 +490,56 @@ const deleteEbook = async (id) => {
 
 const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName) => {
   try {
-    const client = await pool.connect();
+      const client = await pool.connect();
 
-    const checkEbookQuery = 'SELECT * FROM Ebooks WHERE id = $1';
-    const checkEbookResult = await client.query(checkEbookQuery, [id]);
+      const getEbookQuery = 'SELECT * FROM ebooks WHERE id = $1';
+      const getEbookResult = await client.query(getEbookQuery, [id]);
 
-    if (checkEbookResult.rows.length === 0) {
-      throw new Error('Ebook não encontrado.');
-    }
-
-    const existingEbook = checkEbookResult.rows[0];
-
-    if (pdfBuffer || imagemBuffer) {
-      if (pdfBuffer) {
-        const pdfFileName = existingEbook.nome_arquivo_pdf;
-        await deletePDFFromStorage(pdfFileName);
-
-        const newPdfName = `${Date.now()}_${pdfName}`;
-        const pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
-        
-        existingEbook.url_PDF = pdfUrl;
-        existingEbook.nome_arquivo_pdf = newPdfName;
+      if (getEbookResult.rows.length === 0) {
+          throw new Error('Ebook não encontrado.');
       }
 
-      if (imagemBuffer) {
-        const imageFileName = existingEbook.nome_arquivo_imagem;
-        await deleteImageFromStorage(imageFileName);
+      const ebook = getEbookResult.rows[0];
 
-        const newImageName = `${Date.now()}_${imageName}`;
-        const imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
-        
-        existingEbook.url_imagem = imageUrl;
-        existingEbook.nome_arquivo_imagem = newImageName;
+      let newPdfName = ebook.nome_arquivo_pdf;
+      let newImageName = ebook.nome_arquivo_imagem;
+      let pdfUrl = ebook.url_pdf;
+      let imageUrl = ebook.url_imagem;
+
+      // Delete previous files if new ones are being uploaded
+      if (pdfBuffer && pdfName) {
+          await deletePDFFromStorage(ebook.nome_arquivo_pdf); // Implement this function to delete files from storage
+          newPdfName = `${Date.now()}_${pdfName}`;
+          pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
       }
 
-      const updateQuery = 'UPDATE ebooks SET itulo = $2, descricao = $3, url_PDF = $4, nome_arquivo_pdf = $5, url_imagem = $6, nome_arquivo_imagem = $7 WHERE id = $1 RETURNING *';
-      const updateValues = [id, titulo, descricao, existingEbook.url_PDF, existingEbook.nome_arquivo_pdf, existingEbook.url_imagem, existingEbook.nome_arquivo_imagem];
-      const result = await client.query(updateQuery, updateValues);
+      if (imagemBuffer && imageName) {
+          await deletePDFFromStorage(ebook.nome_arquivo_imagem); // Implement this function to delete files from storage
+          newImageName = `${Date.now()}_${imageName}`;
+          imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
+      }
+
+      const updateQuery = `
+          UPDATE ebooks
+          SET titulo = COALESCE($2, titulo),
+              descricao = COALESCE($3, descricao),
+              url_pdf = COALESCE($4, url_pdf),
+              url_imagem = COALESCE($5, url_imagem),
+              nome_arquivo_pdf = COALESCE($6, nome_arquivo_pdf),
+              nome_arquivo_imagem = COALESCE($7, nome_arquivo_imagem)
+          WHERE id = $1
+          RETURNING *
+      `;
+
+      const values = [id, titulo || null, descricao || null, pdfUrl || null, imageUrl || null, newPdfName || null, newImageName || null];
+      const result = await client.query(updateQuery, values);
 
       client.release();
 
       return result.rows[0];
-    } else {
-      const updateQuery = 'UPDATE Ebooks SET Titulo = $2, descricao = $3 WHERE id = $1 RETURNING *';
-      const updateValues = [id, titulo, descricao];
-      const result = await client.query(updateQuery, updateValues);
-
-      client.release();
-
-      return result.rows[0];
-    }
   } catch (error) {
-    console.error(error);
-    throw new Error('Erro ao atualizar ebook.');
+      console.error(error);
+      throw new Error('Erro ao atualizar ebook.');
   }
 };
 
