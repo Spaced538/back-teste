@@ -9,7 +9,7 @@ const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborado
         createServicos,getAllServicos,deleteServicos,updateServicos,getServicoById,
         createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById, 
         deleteImageFromStorage,deletePDFFromStorage } = require('./controllers/controler_images');
-//const { createColaborador, getColaboradores, updateColaborador, deleteColaborador } = require('./controllers/controler_images');
+const { createBlogPost,getAllBlogPosts,deleteBlogPost,updateBlogPost,getBlogPostById} = require('./controllers/controler_blog');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -671,6 +671,101 @@ app.get('/ebooks/:id', async (req, res) => {
     }
   } catch (error) {
     console.error('Erro ao buscar ebook pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+////////////////////////////////////
+
+app.post('/blog/create', upload.single('imagem'), async (req, res) => {
+  try {
+    const { titulo, texto } = req.body;
+    const imagemBuffer = req.file.buffer;
+    const nameFile = req.file.originalname;
+
+    const newBlogPost = await createBlogPost(titulo, texto, imagemBuffer, nameFile);
+
+    res.json(newBlogPost);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar post no blog.' });
+  }
+});
+
+// Rota para listar todos os posts do blog
+app.get('/blog', async (req, res) => {
+  try {
+    const blogPosts = await getAllBlogPosts();
+
+    if (blogPosts) {
+      res.json(JSON.parse(blogPosts));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar os posts do blog.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar os posts do blog:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para excluir um post do blog
+app.delete('/blog/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedBlogPost = await deleteBlogPost(id);
+
+    if (deletedBlogPost.nome_arquivo_imagem) {
+      await deleteImageFromStorage(deletedBlogPost.nome_arquivo_imagem);
+    }
+
+    res.json(deletedBlogPost);
+  } catch (error) {
+    console.error('Erro ao excluir o post do blog:', error);
+    res.status(500).json({ error: 'Erro ao excluir o post do blog.' });
+  }
+});
+
+// Rota para atualizar um post do blog
+app.put('/blog/:id', upload.single('imagem'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { titulo, texto } = req.body;
+    let imagemBuffer, nameFile;
+
+    if (req.file) {
+      imagemBuffer = req.file.buffer;
+      nameFile = req.file.originalname;
+    }
+
+    const updates = {
+      titulo,
+      texto,
+      imagemBuffer,
+      nameFile
+    };
+
+    const updatedBlogPost = await updateBlogPost(id, updates);
+
+    res.json(updatedBlogPost);
+  } catch (error) {
+    console.error('Erro ao atualizar o post do blog:', error);
+    res.status(500).json({ error: 'Erro ao atualizar o post do blog.' });
+  }
+});
+
+// Rota para obter um post do blog pelo ID
+app.get('/blog/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const blogPost = await getBlogPostById(id);
+
+    if (blogPost) {
+      res.json(JSON.parse(blogPost));
+    } else {
+      res.status(404).json({ error: 'Post do blog não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar post do blog pelo ID:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });

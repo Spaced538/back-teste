@@ -588,6 +588,7 @@ module.exports = {
     updateEbook,
     getEbookById,
 
+    uploadImageToStorage,
     deleteImageFromStorage,
     deletePDFFromStorage
 };
