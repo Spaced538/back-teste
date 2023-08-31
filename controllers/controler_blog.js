@@ -99,6 +99,7 @@ const updateBlogPost = async (id, titulo, texto, imagemBuffer, imageName) => {
         const client = await pool.connect();
         const getBlogPostQuery = 'SELECT * FROM blog WHERE id = $1';
         const getBlogPostResult = await client.query(getBlogPostQuery, [id]);
+        //console.log(titulo)
 
         if (getBlogPostResult.rows.length === 0) {
             throw new Error('Post do blog não encontrado.');
@@ -128,7 +129,6 @@ const updateBlogPost = async (id, titulo, texto, imagemBuffer, imageName) => {
         const result = await client.query(updateQuery, values);
 
         client.release();
-
         return result.rows[0];
     } catch (error) {
         console.error(error);

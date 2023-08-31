@@ -737,14 +737,7 @@ app.put('/blog/:id', upload.single('imagem'), async (req, res) => {
       nameFile = req.file.originalname;
     }
 
-    const updates = {
-      titulo,
-      texto,
-      imagemBuffer,
-      nameFile
-    };
-
-    const updatedBlogPost = await updateBlogPost(id, updates);
+    const updatedBlogPost = await updateBlogPost(id, titulo, texto, imagemBuffer, nameFile);
 
     res.json(updatedBlogPost);
   } catch (error) {

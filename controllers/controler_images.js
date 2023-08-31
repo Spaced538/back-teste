@@ -338,6 +338,10 @@ const updateServicos = async (id, updates) => {
     if (updates.imagemBuffer && updates.nameFile) {
       const newNameFile = `${Date.now()}_${updates.nameFile}`;
       const imageUrl = await uploadImageToStorage(updates.imagemBuffer, newNameFile);
+      // Antes de atualizar a imagem, exclua a imagem atual do storage
+      if (currentData.nome_arquivo_imagem) {
+        await deleteImageFromStorage(currentData.nome_arquivo_imagem); // Chamada para excluir a imagem antiga
+      }
       updatedData.nome_arquivo_imagem = newNameFile;
       updatedData.url_imagem = imageUrl;
     }
@@ -506,15 +510,14 @@ const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuff
       let pdfUrl = ebook.url_pdf;
       let imageUrl = ebook.url_imagem;
 
-      // Delete previous files if new ones are being uploaded
       if (pdfBuffer && pdfName) {
-          await deletePDFFromStorage(ebook.nome_arquivo_pdf); // Implement this function to delete files from storage
+          await deletePDFFromStorage(ebook.nome_arquivo_pdf); 
           newPdfName = `${Date.now()}_${pdfName}`;
           pdfUrl = await uploadPDFToStorage(pdfBuffer, newPdfName);
       }
 
       if (imagemBuffer && imageName) {
-          await deletePDFFromStorage(ebook.nome_arquivo_imagem); // Implement this function to delete files from storage
+          await deletePDFFromStorage(ebook.nome_arquivo_imagem); 
           newImageName = `${Date.now()}_${imageName}`;
           imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
       }
@@ -568,27 +571,27 @@ const getEbookById = async (id) => {
 
 module.exports = { 
 
-    uploadImageToStorage,
+  uploadImageToStorage,
 
-    createColaborador,
-    getAllColaboradores,
-    deleteColaborador,
-    updateColaborador,
-    getColaboradorById,
+  createColaborador,
+  getAllColaboradores,
+  deleteColaborador,
+  updateColaborador,
+  getColaboradorById,
 
-    createServicos,
-    getAllServicos,
-    deleteServicos,
-    updateServicos,
-    getServicoById,
+  createServicos,
+  getAllServicos,
+  deleteServicos,
+  updateServicos,
+  getServicoById,
 
-    createEbook,
-    getAllEbooks,
-    deleteEbook,
-    updateEbook,
-    getEbookById,
+  createEbook,
+  getAllEbooks,
+  deleteEbook,
+  updateEbook,
+  getEbookById,
 
-    uploadImageToStorage,
-    deleteImageFromStorage,
-    deletePDFFromStorage
+  uploadImageToStorage,
+  deleteImageFromStorage,
+  deletePDFFromStorage
 };
