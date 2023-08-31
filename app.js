@@ -10,6 +10,7 @@ const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborado
         createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById, 
         deleteImageFromStorage,deletePDFFromStorage } = require('./controllers/controler_images');
 const { createBlogPost,getAllBlogPosts,deleteBlogPost,updateBlogPost,getBlogPostById} = require('./controllers/controler_blog');
+const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBookkeepingItem,getBookkeepingItemById } = require('./controllers/controler_bookkeeping');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -747,7 +748,7 @@ app.put('/blog/:id', verificarToken, upload.single('imagem'), async (req, res) =
 });
 
 // Rota para obter um post do blog pelo ID
-app.get('/blog/:id', async (req, res) => {
+app.get('/blog/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const blogPost = await getBlogPostById(id);
@@ -762,6 +763,98 @@ app.get('/blog/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+///////////////////////////////////
+
+app.post('/bookkeeping/create', verificarToken, upload.single('imagem'), async (req, res) => {
+  try {
+    const { texto } = req.body;
+    const imagemBuffer = req.file.buffer;
+    const nomeArquivoImagem = req.file.originalname;
+
+    const newEntry = await createBookkeeping(texto, imagemBuffer, nomeArquivoImagem);
+
+    res.json(newEntry);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar entrada em bookkeeping.' });
+  }
+});
+
+app.get('/bookkeeping', verificarToken, async (req, res) => {
+  try {
+    const entries = await getAllBookkeepingItems();
+
+    if (entries) {
+      res.json(JSON.parse(entries));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar entradas em bookkeeping.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar entradas em bookkeeping:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.delete('/bookkeeping/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const deletedEntry = await deleteBookkeepingItem(id);
+
+    res.json(deletedEntry);
+    await deleteImageFromStorage(deletedEntry.nome_arquivo_imagem);
+
+  } catch (error) {
+    console.error('Erro ao excluir entrada em bookkeeping:', error);
+    res.status(500).json({ error: 'Erro ao excluir entrada em bookkeeping' });
+  }
+});
+
+app.put('/bookkeeping/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { texto } = req.body;
+    let imagemBuffer, nameFile;
+
+    if (req.file) {
+      imagemBuffer = req.file.buffer;
+      nameFile = req.file.originalname;
+    }
+
+    const updates = {
+      texto,
+      imagemBuffer,
+      nameFile
+    };
+
+    const updatedEntry = await updateBookkeepingItem(id, updates);
+
+    res.json(updatedEntry);
+  } catch (error) {
+    console.error('Erro ao atualizar entrada em bookkeeping:', error);
+    res.status(500).json({ error: 'Erro ao atualizar entrada em bookkeeping' });
+  }
+});
+
+app.get('/bookkeeping/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const entry = await getBookkeepingItemById(id);
+
+    if (entry) {
+      res.json(JSON.parse(entry));
+    } else {
+      res.status(404).json({ error: 'Entrada em bookkeeping não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar entrada em bookkeeping pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 
  
