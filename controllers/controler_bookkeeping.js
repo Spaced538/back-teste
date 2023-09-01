@@ -2,6 +2,11 @@ const { pool } = require('../service/conectionDb/service');
 const { bucket } = require('../service/conectionDb/storage');
 const { generateHexId } = require('./controlers_tables');
 const { uploadImageToStorage, deleteImageFromStorage } = require('./controler_images');
+const { Storage } = require('@google-cloud/storage');
+
+const storage = new Storage({
+  keyFilename: 'C:/Users/mateu/Documents/back-teste/back-teste-fe405-firebase-adminsdk-hhle3-8b885b28f1.json',
+});
 
 const createBookkeeping = async (texto, imagemBuffer, nomeArquivoImagem) => {
     try {
