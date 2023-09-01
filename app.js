@@ -717,18 +717,18 @@ app.delete('/blog/:id', verificarToken, async (req, res) => {
 });
 
 // Rota para atualizar um post do blog
-app.put('/blog/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+app.put('/blog/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
+
     const { titulo, texto } = req.body;
-    let imagemBuffer, nameFile;
 
-    if (req.file) {
-      imagemBuffer = req.file.buffer;
-      nameFile = req.file.originalname;
-    }
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
 
-    const updatedBlogPost = await updateBlogPost(id, titulo, texto, imagemBuffer, nameFile);
+
+
+    const updatedBlogPost = await updateBlogPost(id, titulo, texto, imagemBuffer, imageName);
 
     res.json(updatedBlogPost);
   } catch (error) {

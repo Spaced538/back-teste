@@ -97,20 +97,21 @@ const getBlogPostById = async (id) => {
 const updateBlogPost = async (id, titulo, texto, imagemBuffer, imageName) => {
     try {
         const client = await pool.connect();
+
         const getBlogPostQuery = 'SELECT * FROM blog WHERE id = $1';
         const getBlogPostResult = await client.query(getBlogPostQuery, [id]);
-        //console.log(titulo)
 
         if (getBlogPostResult.rows.length === 0) {
             throw new Error('Post do blog não encontrado.');
         }
 
         const blogPost = getBlogPostResult.rows[0];
+
         let newImageName = blogPost.nome_arquivo_imagem;
         let imageUrl = blogPost.url_imagem;
 
         if (imagemBuffer && imageName) {
-            await deleteImageFromStorage(blogPost.nome_arquivo_imagem);
+            await deleteImageFromStorage(blogPost.nome_arquivo_imagem); 
             newImageName = `${Date.now()}_${imageName}`;
             imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
         }

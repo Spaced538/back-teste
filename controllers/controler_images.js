@@ -358,7 +358,6 @@ const updateServicos = async (id, nome, preco, imagemBuffer, imageName) => {
   }
 };
 
-
 const getServicoById = async (id) => {
   try {
     // Obtém uma conexão do pool
