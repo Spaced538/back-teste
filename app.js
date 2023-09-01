@@ -802,24 +802,16 @@ app.delete('/bookkeeping/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/bookkeeping/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+app.put('/bookkeeping/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
+
     const { texto } = req.body;
-    let imagemBuffer, nameFile;
 
-    if (req.file) {
-      imagemBuffer = req.file.buffer;
-      nameFile = req.file.originalname;
-    }
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
 
-    const updates = {
-      texto,
-      imagemBuffer,
-      nameFile
-    };
-
-    const updatedEntry = await updateBookkeepingItem(id, updates);
+    const updatedEntry = await updateBookkeepingItem(id, texto, imagemBuffer, imageName);
 
     res.json(updatedEntry);
   } catch (error) {

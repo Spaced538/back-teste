@@ -497,7 +497,7 @@ const updateEbook = async (id, titulo, descricao, pdfBuffer, pdfName, imagemBuff
       }
 
       if (imagemBuffer && imageName) {
-          await deletePDFFromStorage(ebook.nome_arquivo_imagem); 
+          await deleteImageFromStorage(ebook.nome_arquivo_imagem); 
           newImageName = `${Date.now()}_${imageName}`;
           imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
       }
