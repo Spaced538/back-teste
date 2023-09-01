@@ -802,7 +802,7 @@ app.delete('/bookkeeping/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/bookkeeping/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/bookkeeping/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
