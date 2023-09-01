@@ -136,7 +136,6 @@ const updateBlogPost = async (id, titulo, texto, imagemBuffer, imageName) => {
     }
 };
 
-// Rota para atualizar um post do blog
 
 module.exports = { 
 

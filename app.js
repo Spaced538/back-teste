@@ -12,6 +12,7 @@ const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborado
 const { createBlogPost,getAllBlogPosts,deleteBlogPost,updateBlogPost,getBlogPostById} = require('./controllers/controler_blog');
 const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBookkeepingItem,getBookkeepingItemById } = require('./controllers/controler_bookkeeping');
 const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,getConsultoriaById } = require('./controllers/controler_consultoria');
+const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado,getCertificadoById} = require('./controllers/controler_certificados');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -465,7 +466,6 @@ app.get('/colaboradores/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
-
 
 ////////////////////////
 
@@ -923,6 +923,78 @@ app.get('/consultoria/:id', async (req, res) => {
   }
 });
 
+//////////////////////////
+
+app.post('/certificados/create', upload.single('imagem'), async (req, res) => {
+  try {
+      const imagemBuffer = req.file.buffer;
+      const nomeArquivo = req.file.originalname;
+
+      const newCertificado = await createCertificado(imagemBuffer, nomeArquivo);
+
+      res.json(newCertificado);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Erro ao criar certificado.' });
+  }
+});
+
+app.get('/certificados', async (req, res) => {
+  try {
+      const certificados = await getAllCertificados();
+
+      if (certificados) {
+          res.json(JSON.parse(certificados));
+      } else {
+          res.status(500).json({ error: 'Erro ao buscar os certificados.' });
+      }
+  } catch (error) {
+      console.error('Erro ao buscar os certificados:', error);
+      res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.delete('/certificados/:id', async (req, res) => {
+  try {
+      const id = req.params.id;
+      const deletedCertificado = await deleteCertificado(id);
+      res.json(deletedCertificado);
+  } catch (error) {
+      console.error('Erro ao excluir o certificado:', error);
+      res.status(500).json({ error: 'Erro ao excluir o certificado.' });
+  }
+});
+
+app.put('/certificados/:id', upload.single('imagem'), async (req, res) => {
+  try {
+      const id = req.params.id;
+      const imagemBuffer = req.file ? req.file.buffer : undefined;
+      const nomeArquivo = req.file ? req.file.originalname : undefined;
+
+      const updatedCertificado = await updateCertificado(id, imagemBuffer, nomeArquivo);
+
+      res.json(updatedCertificado);
+  } catch (error) {
+      console.error('Erro ao atualizar o certificado:', error);
+      res.status(500).json({ error: 'Erro ao atualizar o certificado.' });
+  }
+});
+
+app.get('/certificados/:id', async (req, res) => {
+  try {
+      const id = req.params.id;
+      const certificado = await getCertificadoById(id);
+
+      if (certificado) {
+          res.json(JSON.parse(certificado));
+      } else {
+          res.status(404).json({ error: 'Certificado não encontrado.' });
+      }
+  } catch (error) {
+      console.error('Erro ao buscar certificado pelo ID:', error);
+      res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
 
 
 
