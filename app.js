@@ -11,6 +11,7 @@ const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborado
         deleteImageFromStorage,deletePDFFromStorage } = require('./controllers/controler_images');
 const { createBlogPost,getAllBlogPosts,deleteBlogPost,updateBlogPost,getBlogPostById} = require('./controllers/controler_blog');
 const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBookkeepingItem,getBookkeepingItemById } = require('./controllers/controler_bookkeeping');
+const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,getConsultoriaById } = require('./controllers/controler_consultoria');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -854,6 +855,74 @@ app.get('/bookkeeping/:id', verificarToken, async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+/////////////////////////////////////////////
+
+app.get('/consultoria', async (req, res) => {
+  try {
+    const consultorias = await getConsultoria();
+
+    if (consultorias) {
+      res.json(JSON.parse(consultorias));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar consultorias.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar consultorias:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.post('/consultoria/create', async (req, res) => {
+  try {
+    const { texto1, texto2, texto3, texto4 } = req.body;
+    const newConsultoria = await createConsultoria(texto1, texto2, texto3, texto4);
+    res.json(JSON.parse(newConsultoria));
+  } catch (error) {
+    console.error('Erro ao criar uma nova consultoria:', error);
+    res.status(500).json({ error: 'Erro ao criar uma nova consultoria.' });
+  }
+});
+
+app.delete('/consultoria/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedConsultoria = await deleteConsultoria(id);
+    res.json(deletedConsultoria);
+  } catch (error) {
+    console.error('Erro ao excluir a consultoria:', error);
+    res.status(500).json({ error: 'Erro ao excluir a consultoria.' });
+  }
+});
+
+app.put('/consultoria/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { texto1, texto2, texto3, texto4 } = req.body;
+    await updateConsultoria(id, texto1, texto2, texto3, texto4);
+    res.json({ message: 'Consultoria atualizada com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao atualizar a consultoria:', error);
+    res.status(500).json({ error: 'Erro ao atualizar a consultoria.' });
+  }
+});
+
+app.get('/consultoria/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const consultoria = await getConsultoriaById(id);
+
+    if (consultoria) {
+      res.json(JSON.parse(consultoria));
+    } else {
+      res.status(404).json({ error: 'Consultoria não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar consultoria pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 
 
