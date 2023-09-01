@@ -22,21 +22,19 @@ async function uploadImageToStorage(buffer, originalname) {
   return imageUrl[0];
 }
 
-const deleteImageFromStorage = async (imageName) => {
-    try {
-      const bucketName = 'gs://back-teste-fe405.appspot.com'; 
-      const file = storage.bucket(bucketName).file(imageName);
-  
-      // Verifique se o arquivo existe antes de tentar excluí-lo
-      const exists = await file.exists();
-      if (exists[0]) {
-        await file.delete();
-      }
-    } catch (error) {
-      console.error(error);
-      throw new Error('Erro ao excluir imagem do Storage.');
+async function deleteImageFromStorage(imageFileName) {
+  try {
+    const imageFile = bucket.file(imageFileName);
+    const exists = await imageFile.exists();
+
+    if (exists[0]) {
+      await imageFile.delete();
     }
-  };
+  } catch (error) {
+    throw new Error('Erro ao excluir imagem do Storage.');
+  }
+}
+
 
 async function uploadPDFToStorage(buffer, originalname) {
   const pdfName = `${originalname}`;
