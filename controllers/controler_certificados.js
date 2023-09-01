@@ -72,7 +72,7 @@ const deleteCertificado = async (id) => {
     }
 };
 
-const updateCertificado = async (id, imagemBuffer, nomeArquivo) => {
+const updateCertificado = async (id, imagemBuffer, imageName) => {
     try {
         const client = await pool.connect();
 
@@ -85,31 +85,29 @@ const updateCertificado = async (id, imagemBuffer, nomeArquivo) => {
 
         const certificadoExistente = checkCertificadoResult.rows[0];
 
-        // Verifica se uma nova imagem foi fornecida
-        if (imagemBuffer) {
-            const nomeArquivoExistente = certificadoExistente.nome_arquivo_imagem;
-            await deleteImageFromStorage(nomeArquivoExistente);
+        let newImageName = certificadoExistente.nome_arquivo_imagem;
+        let imageUrl = certificadoExistente.url_imagem;
 
-            const novoNomeArquivo = `${Date.now()}_${nomeArquivo}`;
-            const urlImagem = await uploadImageToStorage(imagemBuffer, novoNomeArquivo);
-
-            const updateQuery = 'UPDATE certificados SET url_imagem = $2, nome_arquivo_imagem = $3 WHERE id = $1 RETURNING *';
-            const updateValues = [id, urlImagem, novoNomeArquivo];
-            const result = await client.query(updateQuery, updateValues);
-
-            client.release();
-
-            return result.rows[0];
-        } else {
-            // Se nenhuma imagem fornecida, apenas atualiza os outros campos
-            const updateQuery = 'UPDATE certificados SET nome_arquivo_imagem = $2 WHERE id = $1 RETURNING *';
-            const updateValues = [id, certificadoExistente.nome_arquivo_imagem];
-            const result = await client.query(updateQuery, updateValues);
-
-            client.release();
-
-            return result.rows[0];
+        if (imagemBuffer && imageName) {
+            await deleteImageFromStorage(certificadoExistente.nome_arquivo_imagem);
+            newImageName = `${Date.now()}_${imageName}`;
+            imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
         }
+
+        const updateQuery = `
+            UPDATE certificados
+            SET url_imagem = COALESCE($2, url_imagem),
+                nome_arquivo_imagem = COALESCE($3, nome_arquivo_imagem)
+            WHERE id = $1
+            RETURNING *
+        `;
+
+        const values = [id, imageUrl || null, newImageName || null];
+        const result = await client.query(updateQuery, values);
+
+        client.release();
+
+        return result.rows[0];
     } catch (error) {
         console.error(error);
         throw new Error('Erro ao atualizar certificado.');

@@ -946,13 +946,15 @@ app.delete('/certificados/:id',verificarToken, async (req, res) => {
   }
 });
 
-app.put('/certificados/:id', upload.single('imagem'), async (req, res) => {
+app.put('/certificados/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
       const id = req.params.id;
-      const imagemBuffer = req.file ? req.file.buffer : undefined;
-      const nomeArquivo = req.file ? req.file.originalname : undefined;
 
-      const updatedCertificado = await updateCertificado(id, imagemBuffer, nomeArquivo);
+
+      const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+      const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
+
+      const updatedCertificado = await updateCertificado(id, imagemBuffer, imageName);
 
       res.json(updatedCertificado);
   } catch (error) {
