@@ -101,20 +101,20 @@ const updateBookkeepingItem = async (id, texto, imagemBuffer, imageName) => {
         }
 
         const updateQuery = `
-        UPDATE bookkeeping
-        SET texto = COALESCE($2, texto),
-            url_imagem = COALESCE($3, url_imagem),
-            nome_arquivo_imagem = COALESCE($4, nome_arquivo_imagem)
-        WHERE id = $1
-        RETURNING *
-    `;
+            UPDATE bookkeeping
+            SET texto = COALESCE($2, texto),
+                url_imagem = COALESCE($3, url_imagem),
+                nome_arquivo_imagem = COALESCE($4, nome_arquivo_imagem)
+            WHERE id = $1
+            RETURNING *
+        `;
 
-    const values = [id, texto || null, imageUrl || null, newImageName || null];
-    const result = await client.query(updateQuery, values);
+        const values = [id, texto || null, imageUrl || null, newImageName || null];
+        const result = await client.query(updateQuery, values);
 
-    client.release();
+        client.release();
 
-    return result.rows[0];
+        return result.rows[0];
     } catch (error) {
         console.error(error);
         throw new Error('Erro ao atualizar item de bookkeeping.');
