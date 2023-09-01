@@ -78,7 +78,7 @@ const deleteConsultingItem = async (id) => {
     }
 };
 
-const updateConsultingItem = async (id, updates) => {
+const updateConsultingItem = async (id, texto, imagemBuffer, imageName) => {
     try {
         const client = await pool.connect();
 
@@ -91,50 +91,33 @@ const updateConsultingItem = async (id, updates) => {
 
         const currentData = getCurrentDataResult.rows[0];
 
-        const updatedData = {
-            texto: updates.texto || currentData.texto,
-            nome_arquivo_imagem: currentData.nome_arquivo_imagem,
-            url_imagem: currentData.url_imagem
-        };
+        let newImageName = currentData.nome_arquivo_imagem;
+        let imageUrl = currentData.url_imagem;
 
-        if (updates.imagemBuffer && updates.nameFile) {
-            const newNomeArquivoImagem = `${Date.now()}_${updates.nameFile}`;
-            const imageUrl = await uploadImageToStorage(updates.imagemBuffer, newNomeArquivoImagem);
-
-            if (currentData.nome_arquivo_imagem) {
-                await deleteImageFromStorage(currentData.nome_arquivo_imagem);
-            }
-
-            updatedData.nome_arquivo_imagem = newNomeArquivoImagem;
-            updatedData.url_imagem = imageUrl;
+        if (imagemBuffer && imageName) {
+            await deleteImageFromStorage(currentData.nome_arquivo_imagem);
+            newImageName = `${Date.now()}_${imageName}`;
+            imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
         }
 
         const updateQuery = `
             UPDATE consulting
-            SET texto = $1, nome_arquivo_imagem = $2, url_imagem = $3
-            WHERE id = $4
+            SET texto = COALESCE($2, texto),
+                url_imagem = COALESCE($3, url_imagem),
+                nome_arquivo_imagem = COALESCE($4, nome_arquivo_imagem)
+            WHERE id = $1
             RETURNING *
         `;
 
-        const updateValues = [
-            updatedData.texto,
-            updatedData.nome_arquivo_imagem,
-            updatedData.url_imagem,
-            id
-        ];
-
-        const updateResult = await client.query(updateQuery, updateValues);
+        const values = [id, texto || null, imageUrl || null, newImageName || null];
+        const result = await client.query(updateQuery, values);
 
         client.release();
 
-        if (updateResult.rows.length === 0) {
-            throw new Error('Falha ao atualizar item de consulting.');
-        }
-
-        return updateResult.rows[0];
+        return result.rows[0];
     } catch (error) {
         console.error(error);
-        throw new Error('Erro ao atualizar item de consulting.');
+        throw new Error('Erro ao atualizar item de bookkeeping.');
     }
 };
 

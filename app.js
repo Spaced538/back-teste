@@ -1027,29 +1027,21 @@ app.delete('/consulting/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/consulting/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+app.put('/consulting/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
+
     const { texto } = req.body;
-    let imagemBuffer, nameFile;
 
-    if (req.file) {
-      imagemBuffer = req.file.buffer;
-      nameFile = req.file.originalname;
-    }
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
 
-    const updates = {
-      texto,
-      imagemBuffer,
-      nameFile
-    };
+    const updatedEntry = await updateConsultingItem(id, texto, imagemBuffer, imageName);
 
-    const updatedEntry = await updateConsultingItem(id, updates);
 
     res.json(updatedEntry);
   } catch (error) {
-    console.error('Erro ao atualizar entrada em consulting:', error);
-    res.status(500).json({ error: 'Erro ao atualizar entrada em consulting' });
+    res.status(500).json({ error: 'Erro ao atualizar bookkeping.' });
   }
 });
 
