@@ -813,10 +813,10 @@ app.put('/bookkeeping/:id', verificarToken, upload.fields([{ name: 'imagem', max
 
     const updatedEntry = await updateBookkeepingItem(id, texto, imagemBuffer, imageName);
 
+
     res.json(updatedEntry);
   } catch (error) {
-    console.error('Erro ao atualizar entrada em bookkeeping:', error);
-    res.status(500).json({ error: 'Erro ao atualizar entrada em bookkeeping' });
+    res.status(500).json({ error: 'Erro ao atualizar bookkeping.' });
   }
 });
 

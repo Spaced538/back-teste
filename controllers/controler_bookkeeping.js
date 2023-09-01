@@ -14,11 +14,11 @@ const createBookkeeping = async (texto, imagemBuffer, nomeArquivoImagem) => {
         const id = generateHexId(60); // Gere o ID usando a função generateHexId
         const newNomeArquivoImagem = `${Date.now()}_${nomeArquivoImagem}`;
         const imageUrl = await uploadImageToStorage(imagemBuffer, newNomeArquivoImagem);
-    
+
         const query = 'INSERT INTO bookkeeping (id, texto, nome_arquivo_imagem, url_imagem) VALUES ($1, $2, $3, $4) RETURNING id';
         const values = [id, texto, newNomeArquivoImagem, imageUrl];
         const result = await client.query(query, values);
-    
+
         const novoItem = {
             id: result.rows[0].id,
             texto,
@@ -26,7 +26,7 @@ const createBookkeeping = async (texto, imagemBuffer, nomeArquivoImagem) => {
         };
 
         client.release();
-  
+
         return novoItem; // Retorne o novo item de bookkeeping
     } catch (error) {
         console.error(error);
@@ -100,7 +100,7 @@ const updateBookkeepingItem = async (id, texto, imagemBuffer, imageName) => {
         let imageUrl = currentData.url_imagem;
 
         if (imagemBuffer && imageName) {
-            await deleteImageFromStorage(currentData.nome_arquivo_imagem); 
+            await deleteImageFromStorage(currentData.nome_arquivo_imagem);
             newImageName = `${Date.now()}_${imageName}`;
             imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
         }
@@ -145,7 +145,7 @@ const getBookkeepingItemById = async (id) => {
     }
 };
 
-module.exports = { 
+module.exports = {
 
     createBookkeeping,
     getAllBookkeepingItems,
