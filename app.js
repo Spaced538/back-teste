@@ -802,7 +802,7 @@ app.delete('/bookkeeping/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/bookkeeping/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/bookkeeping/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -813,10 +813,10 @@ app.put('/bookkeeping/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), as
 
     const updatedEntry = await updateBookkeepingItem(id, texto, imagemBuffer, imageName);
 
+
     res.json(updatedEntry);
   } catch (error) {
-    console.error('Erro ao atualizar entrada em bookkeeping:', error);
-    res.status(500).json({ error: 'Erro ao atualizar entrada em bookkeeping' });
+    res.status(500).json({ error: 'Erro ao atualizar bookkeping.' });
   }
 });
 

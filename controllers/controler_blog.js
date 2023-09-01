@@ -111,7 +111,7 @@ const updateBlogPost = async (id, titulo, texto, imagemBuffer, imageName) => {
         let imageUrl = blogPost.url_imagem;
 
         if (imagemBuffer && imageName) {
-            await deleteImageFromStorage(blogPost.nome_arquivo_imagem); 
+            await deleteImageFromStorage(blogPost.nome_arquivo_imagem);
             newImageName = `${Date.now()}_${imageName}`;
             imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
         }
@@ -138,7 +138,7 @@ const updateBlogPost = async (id, titulo, texto, imagemBuffer, imageName) => {
 };
 
 
-module.exports = { 
+module.exports = {
 
     createBlogPost,
     getAllBlogPosts,
