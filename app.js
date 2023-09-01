@@ -13,6 +13,7 @@ const { createBlogPost,getAllBlogPosts,deleteBlogPost,updateBlogPost,getBlogPost
 const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBookkeepingItem,getBookkeepingItemById } = require('./controllers/controler_bookkeeping');
 const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,getConsultoriaById } = require('./controllers/controler_consultoria');
 const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado,getCertificadoById} = require('./controllers/controler_certificados');
+const { createConsulting,getAllConsultingItems,deleteConsultingItem,updateConsultingItem,getConsultingItemById} = require('./controllers/controler_consulting');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -476,10 +477,10 @@ app.post('/servicos/create', upload.single('imagem'), async (req, res) => {
 
     const nameFile = req.file.originalname;
 
-    // Chama a função createColaborador para criar um novo Colaborador
+    // Chama a função createServicos para criar um novo serviço
     const newServico = await createServicos(nome, preco, imagemBuffer, nameFile);
 
-    // Retorna o novo Colaborador como resposta da requisição
+    // Retorna o novo serviços como resposta da requisição
     res.json(newServico);
 
   } catch (error) {
@@ -533,28 +534,16 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/servicos/:id', upload.single('imagem'), async (req, res) => {
+app.put('/servicos/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
     const { nome, preco } = req.body;
-    let imagemBuffer, nameFile;
-
-    if (req.file) {
-      imagemBuffer = req.file.buffer;
-      nameFile = req.file.originalname;
-    }
-
-    // Crie um objeto com os campos que você deseja atualizar, incluindo a imagem
-    const updates = {
-      nome,
-      preco,
-      imagemBuffer,
-      nameFile
-    };
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
 
     // Chama a função updateServico para atualizar o serviço com as atualizações fornecidas
-    const updatedService = await updateServicos(id, updates);
+    const updatedService = await updateServicos(id, nome, preco, imagemBuffer, imageName);
 
     // Retorna o serviço atualizado como resposta da requisição
     res.json(updatedService);
@@ -873,7 +862,7 @@ app.get('/consultoria', async (req, res) => {
   }
 });
 
-app.post('/consultoria/create', async (req, res) => {
+app.post('/consultoria/create',verificarToken, async (req, res) => {
   try {
     const { texto1, texto2, texto3, texto4 } = req.body;
     const newConsultoria = await createConsultoria(texto1, texto2, texto3, texto4);
@@ -884,7 +873,7 @@ app.post('/consultoria/create', async (req, res) => {
   }
 });
 
-app.delete('/consultoria/:id', async (req, res) => {
+app.delete('/consultoria/:id',verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const deletedConsultoria = await deleteConsultoria(id);
@@ -895,7 +884,7 @@ app.delete('/consultoria/:id', async (req, res) => {
   }
 });
 
-app.put('/consultoria/:id', async (req, res) => {
+app.put('/consultoria/:id',verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { texto1, texto2, texto3, texto4 } = req.body;
@@ -907,7 +896,7 @@ app.put('/consultoria/:id', async (req, res) => {
   }
 });
 
-app.get('/consultoria/:id', async (req, res) => {
+app.get('/consultoria/:id',verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const consultoria = await getConsultoriaById(id);
@@ -925,7 +914,7 @@ app.get('/consultoria/:id', async (req, res) => {
 
 //////////////////////////
 
-app.post('/certificados/create', upload.single('imagem'), async (req, res) => {
+app.post('/certificados/create',verificarToken, upload.single('imagem'), async (req, res) => {
   try {
       const imagemBuffer = req.file.buffer;
       const nomeArquivo = req.file.originalname;
@@ -954,7 +943,7 @@ app.get('/certificados', async (req, res) => {
   }
 });
 
-app.delete('/certificados/:id', async (req, res) => {
+app.delete('/certificados/:id',verificarToken, async (req, res) => {
   try {
       const id = req.params.id;
       const deletedCertificado = await deleteCertificado(id);
@@ -980,7 +969,7 @@ app.put('/certificados/:id', upload.single('imagem'), async (req, res) => {
   }
 });
 
-app.get('/certificados/:id', async (req, res) => {
+app.get('/certificados/:id', verificarToken, async (req, res) => {
   try {
       const id = req.params.id;
       const certificado = await getCertificadoById(id);
@@ -995,6 +984,98 @@ app.get('/certificados/:id', async (req, res) => {
       res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+/////////////////////////////////////////
+
+app.post('/consulting/create', verificarToken, upload.single('imagem'), async (req, res) => {
+  try {
+    const { texto } = req.body;
+    const imagemBuffer = req.file.buffer;
+    const nomeArquivoImagem = req.file.originalname;
+
+    const newEntry = await createConsulting(texto, imagemBuffer, nomeArquivoImagem);
+
+    res.json(newEntry);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar entrada em consulting.' });
+  }
+});
+
+app.get('/consulting', async (req, res) => {
+  try {
+    const entries = await getAllConsultingItems();
+
+    if (entries) {
+      res.json(JSON.parse(entries));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar entradas em consulting.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar entradas em consulting:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.delete('/consulting/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const deletedEntry = await deleteConsultingItem(id);
+
+    res.json(deletedEntry);
+    await deleteImageFromStorage(deletedEntry.nome_arquivo_imagem);
+
+  } catch (error) {
+    console.error('Erro ao excluir entrada em consulting:', error);
+    res.status(500).json({ error: 'Erro ao excluir entrada em consulting' });
+  }
+});
+
+app.put('/consulting/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { texto } = req.body;
+    let imagemBuffer, nameFile;
+
+    if (req.file) {
+      imagemBuffer = req.file.buffer;
+      nameFile = req.file.originalname;
+    }
+
+    const updates = {
+      texto,
+      imagemBuffer,
+      nameFile
+    };
+
+    const updatedEntry = await updateConsultingItem(id, updates);
+
+    res.json(updatedEntry);
+  } catch (error) {
+    console.error('Erro ao atualizar entrada em consulting:', error);
+    res.status(500).json({ error: 'Erro ao atualizar entrada em consulting' });
+  }
+});
+
+app.get('/consulting/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const entry = await getConsultingItemById(id);
+
+    if (entry) {
+      res.json(JSON.parse(entry));
+    } else {
+      res.status(404).json({ error: 'Entrada em consulting não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar entrada em consulting pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 
 

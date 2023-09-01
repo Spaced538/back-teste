@@ -313,7 +313,7 @@ const deleteServicos = async (id) => {
     }
 };
 
-const updateServicos = async (id, updates) => {
+const updateServicos = async (id, nome, preco, imagemBuffer, imageName) => {
   try {
     const client = await pool.connect();
 
@@ -327,52 +327,34 @@ const updateServicos = async (id, updates) => {
 
     const currentData = getCurrentDataResult.rows[0];
 
-    // Combine os dados atuais com as atualizações, mantendo os valores originais se não forem fornecidos
-    const updatedData = {
-      nome: updates.nome || currentData.nome,
-      preco: updates.preco || currentData.preco,
-      nome_arquivo_imagem: currentData.nome_arquivo_imagem,
-      url_imagem: currentData.url_imagem
-    };
+    let newImageName = currentData.nome_arquivo_imagem;
+    let imageUrl = currentData.url_imagem;
 
-    if (updates.imagemBuffer && updates.nameFile) {
-      const newNameFile = `${Date.now()}_${updates.nameFile}`;
-      const imageUrl = await uploadImageToStorage(updates.imagemBuffer, newNameFile);
-      // Antes de atualizar a imagem, exclua a imagem atual do storage
-      if (currentData.nome_arquivo_imagem) {
-        await deleteImageFromStorage(currentData.nome_arquivo_imagem); // Chamada para excluir a imagem antiga
-      }
-      updatedData.nome_arquivo_imagem = newNameFile;
-      updatedData.url_imagem = imageUrl;
+    if (imagemBuffer && imageName) {
+        await deletePDFFromStorage(currentData.nome_arquivo_imagem); 
+        newImageName = `${Date.now()}_${imageName}`;
+        imageUrl = await uploadImageToStorage(imagemBuffer, newImageName);
     }
 
-    // Atualize os dados no banco de dados
     const updateQuery = `
-      UPDATE servicos
-      SET nome = $1, preco = $2, nome_arquivo_imagem = $3, url_imagem = $4
-      WHERE id = $5
-      RETURNING *
+        UPDATE servicos
+        SET nome = COALESCE($2, nome),
+            preco = COALESCE($3, preco),
+            nome_arquivo_imagem = COALESCE($4, nome_arquivo_imagem),
+            url_imagem = COALESCE($5, url_imagem)
+        WHERE id = $1
+        RETURNING *
     `;
-    const updateValues = [
-      updatedData.nome,
-      updatedData.preco,
-      updatedData.nome_arquivo_imagem,
-      updatedData.url_imagem,
-      id
-    ];
-    const updateResult = await client.query(updateQuery, updateValues);
 
-    // Libere a conexão de volta para o pool
+    const values = [id, nome || null, preco || null, newImageName || null, imageUrl || null];
+    const result = await client.query(updateQuery, values);
+
     client.release();
 
-    if (updateResult.rows.length === 0) {
-      throw new Error('Falha ao atualizar serviço.');
-    }
-
-    return updateResult.rows[0];
+    return result.rows[0];
   } catch (error) {
-    console.error(error);
-    throw new Error('Erro ao atualizar serviço.');
+      console.error(error);
+      throw new Error('Erro ao atualizar serviço.');
   }
 };
 
@@ -438,7 +420,6 @@ const createEbook = async (titulo, descricao, pdfBuffer, pdfName, imagemBuffer, 
       throw new Error('Erro ao criar ebook.');
   }
 };
-
 
 
 const getAllEbooks = async () => {
