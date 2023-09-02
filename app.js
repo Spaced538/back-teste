@@ -26,7 +26,7 @@ const upload = multer({ storage: storage });
 const port = 8000
 
 app.get('/', (req, res) => {
-  res.send('Bem-vindo à página inicial');
+  res.status(200).send('success');
 });
 
 
