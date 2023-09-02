@@ -14,6 +14,7 @@ const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBoo
 const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,getConsultoriaById } = require('./controllers/controler_consultoria');
 const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado,getCertificadoById} = require('./controllers/controler_certificados');
 const { createConsulting,getAllConsultingItems,deleteConsultingItem,updateConsultingItem,getConsultingItemById} = require('./controllers/controler_consulting');
+const { getComentarios,createComentario,deleteComentario,updateComentario,getComentarioById} = require('./controllers/controler_comentarios');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -362,7 +363,7 @@ app.get('/contacts/:id', async (req, res) => {
 
 ////////////////////////
 
-app.post('/colaboradores/create', upload.single('imagem'), async (req, res) => {
+app.post('/colaboradores/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { nome, funcao } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -404,7 +405,7 @@ app.get('/colaboradores', async (req, res) => {
 });
 
 // Configuração da rota para excluir um colaborador
-app.delete('/colaboradores/:id', async (req, res) => {
+app.delete('/colaboradores/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -426,7 +427,7 @@ app.delete('/colaboradores/:id', async (req, res) => {
 });
 
 // Configuração da rota para atualizar um colaborador
-app.put('/colaboradores/:id', upload.single('imagem'), async (req, res) => {
+app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (req, res) => {
 
   try {
     const id = req.params.id;
@@ -450,7 +451,7 @@ app.put('/colaboradores/:id', upload.single('imagem'), async (req, res) => {
 });
 
 // Configuração da rota para obter um colaborador pelo ID
-app.get('/colaboradores/:id', async (req, res) => {
+app.get('/colaboradores/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -470,7 +471,7 @@ app.get('/colaboradores/:id', async (req, res) => {
 
 ////////////////////////
 
-app.post('/servicos/create', upload.single('imagem'), async (req, res) => {
+app.post('/servicos/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { nome, preco } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -534,7 +535,7 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/servicos/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/servicos/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -555,7 +556,7 @@ app.put('/servicos/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async
 });
 
 // Configuração da rota para obter um serviço pelo ID
-app.get('/servicos/:id', async (req, res) => {
+app.get('/servicos/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -649,7 +650,7 @@ app.put('/ebooks/:id', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1
   }
 });
 
-app.get('/ebooks/:id', async (req, res) => {
+app.get('/ebooks/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -772,7 +773,7 @@ app.post('/bookkeeping/create', verificarToken, upload.single('imagem'), async (
   }
 });
 
-app.get('/bookkeeping', verificarToken, async (req, res) => {
+app.get('/bookkeeping', async (req, res) => {
   try {
     const entries = await getAllBookkeepingItems();
 
@@ -946,7 +947,7 @@ app.delete('/certificados/:id',verificarToken, async (req, res) => {
   }
 });
 
-app.put('/certificados/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/certificados/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
       const id = req.params.id;
 
@@ -1062,10 +1063,92 @@ app.get('/consulting/:id', verificarToken, async (req, res) => {
   }
 });
 
+//////////////////////////////////
+
+app.get('/comentarios/:idPost', async (req, res) => {
+  try {
+    const idPost = req.params.idPost;
+
+    // Chama a função getComentarios para obter os comentários relacionados ao ID_POST
+    const comentarios = await getComentarios(idPost);
+
+    res.json(comentarios);
+  } catch (error) {
+    console.error('Erro ao buscar comentários pelo ID_POST:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.post('/comentarios/create/:idPost', verificarToken, async (req, res) => {
+  try {
+    // Recupera os dados do corpo da requisição
+    const { texto } = req.body;
+    const idPost = req.params.idPost;
+
+    // Chama a função createComentario para criar um novo comentário associado ao ID_POST
+    const newComentario = await createComentario(idPost, texto);
+
+    // Retorna o novo comentário como resposta da requisição
+    res.json(newComentario);
+  } catch (error) {
+    console.error('Erro ao criar um novo comentário:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo comentário.' });
+  }
+});
+
+app.delete('/comentarios/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função deleteComentario para excluir o comentário
+    const deletedComentario = await deleteComentario(id);
+
+    // Retorna o comentário excluído como resposta da requisição
+    res.json(deletedComentario);
+  } catch (error) {
+    console.error('Erro ao excluir o comentário:', error);
+    res.status(500).json({ error: 'Erro ao excluir o comentário.' });
+  }
+});
+
+app.put('/comentarios/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { texto } = req.body;
+
+    // Chama a função updateComentario para atualizar o comentário
+    await updateComentario(id, texto);
+
+    // Retorna uma resposta de sucesso
+    res.json({ message: 'Comentário atualizado com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao atualizar o comentário:', error);
+    res.status(500).json({ error: 'Erro ao atualizar o comentário.' });
+  }
+});
+
+app.get('/comentarios/id/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.log(id);
+
+    // Chama a função getComentarioById para obter o comentário pelo ID
+    const comentario = await getComentarioById(id);
+
+    if (comentario) {
+      res.json(JSON.parse(comentario));
+    } else {
+      res.status(404).json({ error: 'Comentário não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar comentário pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
 
 
 
- 
+
 app.listen(port, () => {
    
   console.log("Servidor inciado na portta", port);
