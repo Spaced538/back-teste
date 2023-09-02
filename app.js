@@ -4,7 +4,7 @@ const multer = require('multer');
 const { getAdms,createAdm,deleteAdm,updateAdm,getAdmById,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,getDepoimentoById,
         getContact,createContact,deleteContact,getContactById, } = require('./controllers/controlers_tables');
-const { Logi } = require('./controllers/controler_login');
+const { Login,verificarToken } = require('./controllers/controler_login');
 const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,getColaboradorById,
         createServicos,getAllServicos,deleteServicos,updateServicos,getServicoById,
         createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById, 
@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/adms', async (req, res) => {
+app.get('/adms',  verificarToken, async (req, res) => {
   try {
 
     const users = await getAdms();
@@ -77,7 +77,7 @@ app.get('/adms', async (req, res) => {
 });
 
 // Configuração da rota para criar um usuário
-app.post('/adms/create', async (req, res) => {
+app.post('/adms/create', verificarToken, async (req, res) => {
 
   try {
 
@@ -100,7 +100,7 @@ app.post('/adms/create', async (req, res) => {
 });
 
 // Configuração da rota para excluir um usuário
-app.delete('/adms/:id', async (req, res) => {
+app.delete('/adms/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -122,7 +122,7 @@ app.delete('/adms/:id', async (req, res) => {
 });
 
 // Configuração da rota para atualizar um usuário
-app.put('/adms/:id', async (req, res) => {
+app.put('/adms/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -145,7 +145,7 @@ app.put('/adms/:id', async (req, res) => {
 });
 
 // Configuração da rota para buscar as informações de um administrador pelo ID
-app.get('/adms/:id', async (req, res) => {
+app.get('/adms/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -188,7 +188,7 @@ app.get('/depoiments', async (req, res) => {
 });
 
 // Configuração da rota para criar um depoimento
-app.post('/depoiments/create', async (req, res) => {
+app.post('/depoiments/create', verificarToken, async (req, res) => {
 
   try {
     // Recupera os dados do corpo da requisição
@@ -210,7 +210,7 @@ app.post('/depoiments/create', async (req, res) => {
 });
 
 // Configuração da rota para excluir um depoimento
-app.delete('/depoiments/:id', async (req, res) => {
+app.delete('/depoiments/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -233,7 +233,7 @@ app.delete('/depoiments/:id', async (req, res) => {
 
 
 // Configuração da rota para atualizar um depoimento
-app.put('/depoiments/:id', async (req, res) => {
+app.put('/depoiments/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -276,7 +276,7 @@ app.get('/depoimentos/:id', async (req, res) => {
 
 ////////////////////////
 
-app.get('/contacts', async (req, res) => {
+app.get('/contacts', verificarToken, async (req, res) => {
 
   try {
 
@@ -321,7 +321,7 @@ app.post('/contacts/create', async (req, res) => {
 });
 
 // Configuração da rota para excluir um contato do cliente
-app.delete('/contacts/:id', async (req, res) => {
+app.delete('/contacts/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -363,7 +363,7 @@ app.get('/contacts/:id', async (req, res) => {
 
 ////////////////////////
 
-app.post('/colaboradores/create', upload.single('imagem'), async (req, res) => {
+app.post('/colaboradores/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { nome, funcao } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -405,7 +405,7 @@ app.get('/colaboradores', async (req, res) => {
 });
 
 // Configuração da rota para excluir um colaborador
-app.delete('/colaboradores/:id', async (req, res) => {
+app.delete('/colaboradores/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -427,7 +427,7 @@ app.delete('/colaboradores/:id', async (req, res) => {
 });
 
 // Configuração da rota para atualizar um colaborador
-app.put('/colaboradores/:id', upload.single('imagem'), async (req, res) => {
+app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (req, res) => {
 
   try {
     const id = req.params.id;
@@ -451,7 +451,7 @@ app.put('/colaboradores/:id', upload.single('imagem'), async (req, res) => {
 });
 
 // Configuração da rota para obter um colaborador pelo ID
-app.get('/colaboradores/:id', async (req, res) => {
+app.get('/colaboradores/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -471,7 +471,7 @@ app.get('/colaboradores/:id', async (req, res) => {
 
 ////////////////////////
 
-app.post('/servicos/create', upload.single('imagem'), async (req, res) => {
+app.post('/servicos/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { nome, preco } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -513,7 +513,7 @@ app.get('/servicos', async (req, res) => {
 });
 
 // Configuração da rota para excluir um serviço
-app.delete('/servicos/:id', async (req, res) => {
+app.delete('/servicos/:id', verificarToken, async (req, res) => {
 
   try {
 
@@ -535,7 +535,7 @@ app.delete('/servicos/:id', async (req, res) => {
   }
 });
 
-app.put('/servicos/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/servicos/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -556,7 +556,7 @@ app.put('/servicos/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async
 });
 
 // Configuração da rota para obter um serviço pelo ID
-app.get('/servicos/:id', async (req, res) => {
+app.get('/servicos/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -576,7 +576,7 @@ app.get('/servicos/:id', async (req, res) => {
 
 /////////////////////////////////
 
-app.post('/ebooks/create', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.post('/ebooks/create', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
       const id = req.params.id;
       const { titulo, descricao } = req.body;
@@ -614,7 +614,7 @@ app.get('/ebooks', async (req, res) => {
   }
 });
 
-app.delete('/ebooks/:id', async (req, res) => {
+app.delete('/ebooks/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const deletedEbook = await deleteEbook(id);
@@ -630,7 +630,7 @@ app.delete('/ebooks/:id', async (req, res) => {
 });
 
 
-app.put('/ebooks/:id', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/ebooks/:id', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -650,7 +650,7 @@ app.put('/ebooks/:id', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'ima
   }
 });
 
-app.get('/ebooks/:id', async (req, res) => {
+app.get('/ebooks/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -669,7 +669,7 @@ app.get('/ebooks/:id', async (req, res) => {
 
 ////////////////////////////////////
 
-app.post('/blog/create', upload.single('imagem'), async (req, res) => {
+app.post('/blog/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { titulo, texto } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -701,7 +701,7 @@ app.get('/blog', async (req, res) => {
 });
 
 // Rota para excluir um post do blog
-app.delete('/blog/:id', async (req, res) => {
+app.delete('/blog/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const deletedBlogPost = await deleteBlogPost(id);
@@ -718,7 +718,7 @@ app.delete('/blog/:id', async (req, res) => {
 });
 
 // Rota para atualizar um post do blog
-app.put('/blog/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/blog/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -739,7 +739,7 @@ app.put('/blog/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (re
 });
 
 // Rota para obter um post do blog pelo ID
-app.get('/blog/:id', async (req, res) => {
+app.get('/blog/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const blogPost = await getBlogPostById(id);
@@ -757,7 +757,7 @@ app.get('/blog/:id', async (req, res) => {
 
 ///////////////////////////////////
 
-app.post('/bookkeeping/create', upload.single('imagem'), async (req, res) => {
+app.post('/bookkeeping/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { texto } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -788,7 +788,7 @@ app.get('/bookkeeping', async (req, res) => {
   }
 });
 
-app.delete('/bookkeeping/:id', async (req, res) => {
+app.delete('/bookkeeping/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -803,7 +803,7 @@ app.delete('/bookkeeping/:id', async (req, res) => {
   }
 });
 
-app.put('/bookkeeping/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/bookkeeping/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -821,7 +821,7 @@ app.put('/bookkeeping/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), as
   }
 });
 
-app.get('/bookkeeping/:id', async (req, res) => {
+app.get('/bookkeeping/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -855,7 +855,7 @@ app.get('/consultoria', async (req, res) => {
   }
 });
 
-app.post('/consultoria/create', async (req, res) => {
+app.post('/consultoria/create',verificarToken, async (req, res) => {
   try {
     const { texto1, texto2, texto3, texto4 } = req.body;
     const newConsultoria = await createConsultoria(texto1, texto2, texto3, texto4);
@@ -866,7 +866,7 @@ app.post('/consultoria/create', async (req, res) => {
   }
 });
 
-app.delete('/consultoria/:id', async (req, res) => {
+app.delete('/consultoria/:id',verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const deletedConsultoria = await deleteConsultoria(id);
@@ -877,7 +877,7 @@ app.delete('/consultoria/:id', async (req, res) => {
   }
 });
 
-app.put('/consultoria/:id', async (req, res) => {
+app.put('/consultoria/:id',verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { texto1, texto2, texto3, texto4 } = req.body;
@@ -889,7 +889,7 @@ app.put('/consultoria/:id', async (req, res) => {
   }
 });
 
-app.get('/consultoria/:id', async (req, res) => {
+app.get('/consultoria/:id',verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const consultoria = await getConsultoriaById(id);
@@ -907,7 +907,7 @@ app.get('/consultoria/:id', async (req, res) => {
 
 //////////////////////////
 
-app.post('/certificados/create', upload.single('imagem'), async (req, res) => {
+app.post('/certificados/create',verificarToken, upload.single('imagem'), async (req, res) => {
   try {
       const imagemBuffer = req.file.buffer;
       const nomeArquivo = req.file.originalname;
@@ -936,7 +936,7 @@ app.get('/certificados', async (req, res) => {
   }
 });
 
-app.delete('/certificados/:id', async (req, res) => {
+app.delete('/certificados/:id',verificarToken, async (req, res) => {
   try {
       const id = req.params.id;
       const deletedCertificado = await deleteCertificado(id);
@@ -947,7 +947,7 @@ app.delete('/certificados/:id', async (req, res) => {
   }
 });
 
-app.put('/certificados/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/certificados/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
       const id = req.params.id;
 
@@ -964,7 +964,7 @@ app.put('/certificados/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), a
   }
 });
 
-app.get('/certificados/:id', async (req, res) => {
+app.get('/certificados/:id', verificarToken, async (req, res) => {
   try {
       const id = req.params.id;
       const certificado = await getCertificadoById(id);
@@ -982,7 +982,7 @@ app.get('/certificados/:id', async (req, res) => {
 
 /////////////////////////////////////////
 
-app.post('/consulting/create', upload.single('imagem'), async (req, res) => {
+app.post('/consulting/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { texto } = req.body;
     const imagemBuffer = req.file.buffer;
@@ -1013,7 +1013,7 @@ app.get('/consulting', async (req, res) => {
   }
 });
 
-app.delete('/consulting/:id', async (req, res) => {
+app.delete('/consulting/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -1028,7 +1028,7 @@ app.delete('/consulting/:id', async (req, res) => {
   }
 });
 
-app.put('/consulting/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+app.put('/consulting/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -1046,7 +1046,7 @@ app.put('/consulting/:id', upload.fields([{ name: 'imagem', maxCount: 1 }]), asy
   }
 });
 
-app.get('/consulting/:id', async (req, res) => {
+app.get('/consulting/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -1079,7 +1079,7 @@ app.get('/comentarios/:idPost', async (req, res) => {
   }
 });
 
-app.post('/comentarios/create/:idPost', async (req, res) => {
+app.post('/comentarios/create/:idPost', verificarToken, async (req, res) => {
   try {
     // Recupera os dados do corpo da requisição
     const { texto } = req.body;
@@ -1096,7 +1096,7 @@ app.post('/comentarios/create/:idPost', async (req, res) => {
   }
 });
 
-app.delete('/comentarios/:id', async (req, res) => {
+app.delete('/comentarios/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -1111,7 +1111,7 @@ app.delete('/comentarios/:id', async (req, res) => {
   }
 });
 
-app.put('/comentarios/:id', async (req, res) => {
+app.put('/comentarios/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { texto } = req.body;
@@ -1127,7 +1127,7 @@ app.put('/comentarios/:id', async (req, res) => {
   }
 });
 
-app.get('/comentarios/id/:id', async (req, res) => {
+app.get('/comentarios/id/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     console.log(id);
