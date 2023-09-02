@@ -601,8 +601,6 @@ app.post('/ebooks/create', verificarToken, upload.fields([{ name: 'pdf', maxCoun
   }
 });
 
-
-
 app.get('/ebooks', async (req, res) => {
   try {
     const ebooks = await getAllEbooks();
@@ -669,13 +667,17 @@ app.get('/ebooks/:id', verificarToken, async (req, res) => {
 
 ////////////////////////////////////
 
-app.post('/blog/create', verificarToken, upload.single('imagem'), async (req, res) => {
+app.post('/blog/create', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
     const { titulo, texto } = req.body;
-    const imagemBuffer = req.file.buffer;
-    const nameFile = req.file.originalname;
+    let imagemBuffer, imageName;
 
-    const newBlogPost = await createBlogPost(titulo, texto, imagemBuffer, nameFile);
+    if (req.files['imagem'] && req.files['imagem'][0]) {
+        imagemBuffer = req.files['imagem'][0].buffer;
+        imageName = req.files['imagem'][0].originalname;
+    }
+
+    const newBlogPost = await createBlogPost(titulo, texto, imagemBuffer, imageName);
 
     res.json(newBlogPost);
   } catch (error) {
