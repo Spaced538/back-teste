@@ -15,6 +15,7 @@ const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,get
 const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado,getCertificadoById} = require('./controllers/controler_certificados');
 const { createConsulting,getAllConsultingItems,deleteConsultingItem,updateConsultingItem,getConsultingItemById} = require('./controllers/controler_consulting');
 const { getComentarios,createComentario,deleteComentario,updateComentario,getComentarioById} = require('./controllers/controler_comentarios');
+const { createAgendamentos,getAgendamentos,deleteAgendamentos,updateAgendamentos,getAgendamentoById} = require('./controllers/controler_agendamentos');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -1144,6 +1145,71 @@ app.get('/comentarios/id/:id', verificarToken, async (req, res) => {
     }
   } catch (error) {
     console.error('Erro ao buscar comentário pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+////////////////////////////////////////
+
+app.get('/agendamentos', async (req, res) => {
+  try {
+    const agendamentos = await getAgendamentos();
+    if (agendamentos) {
+      res.json(JSON.parse(agendamentos));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar agendamentos.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar agendamentos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.post('/agendamentos/create', verificarToken, async (req, res) => {
+  try {
+    const { nome, email, telefone, provincia, servico, mais_informacao } = req.body;
+    const newAgendamento = await createAgendamentos(nome, email, telefone, provincia, servico, mais_informacao);
+    res.json(JSON.parse(newAgendamento));
+  } catch (error) {
+    console.error('Erro ao criar um novo agendamento:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo agendamento.' });
+  }
+});
+
+app.delete('/agendamentos/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedAgendamento = await deleteAgendamentos(id);
+    res.json(JSON.parse(deletedAgendamento));
+  } catch (error) {
+    console.error('Erro ao excluir o agendamento:', error);
+    res.status(500).json({ error: 'Erro ao excluir o agendamento.' });
+  }
+});
+
+app.put('/agendamentos/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nome, email, telefone, provincia, servico, mais_informacao } = req.body;
+    await updateAgendamentos(id, nome, email, telefone, provincia, servico, mais_informacao);
+    res.json({ message: 'Agendamento atualizado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar o agendamento:', error);
+    res.status(500).json({ error: 'Erro ao atualizar o agendamento.' });
+  }
+});
+
+app.get('/agendamentos/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const agendamento = await getAgendamentoById(id);
+    if (agendamento) {
+      res.json(JSON.parse(agendamento));
+    } else {
+      res.status(404).json({ error: 'Agendamento não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar agendamento pelo ID:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
