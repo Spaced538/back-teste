@@ -1165,7 +1165,7 @@ app.get('/agendamentos', async (req, res) => {
   }
 });
 
-app.post('/agendamentos/create', verificarToken, async (req, res) => {
+app.post('/agendamentos/create', async (req, res) => {
   try {
     const { nome, email, telefone, provincia, servico, mais_informacao } = req.body;
     const newAgendamento = await createAgendamentos(nome, email, telefone, provincia, servico, mais_informacao);
