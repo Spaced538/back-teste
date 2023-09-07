@@ -742,7 +742,7 @@ app.put('/blog/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 
 });
 
 // Rota para obter um post do blog pelo ID
-app.get('/blog/:id', verificarToken, async (req, res) => {
+app.get('/blog/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const blogPost = await getBlogPostById(id);
