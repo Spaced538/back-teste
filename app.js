@@ -1,22 +1,22 @@
-const express =  require('express')
+const express = require('express')
 const cors = require('cors');
 const multer = require('multer');
-const { getAdms,createAdm,deleteAdm,updateAdm,getAdmById,
-        getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,getDepoimentoById,
-        getContact,createContact,deleteContact,getContactById, } = require('./controllers/controlers_tables');
-const { Login,verificarToken } = require('./controllers/controler_login');
-const { createColaborador,getAllColaboradores,deleteColaborador,updateColaborador,getColaboradorById,
-        createServicos,getAllServicos,deleteServicos,updateServicos,getServicoById,
-        createEbook,getAllEbooks,deleteEbook,updateEbook,getEbookById, 
-        deleteImageFromStorage,deletePDFFromStorage } = require('./controllers/controler_images');
-const { createBlogPost,getAllBlogPosts,deleteBlogPost,updateBlogPost,getBlogPostById} = require('./controllers/controler_blog');
-const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBookkeepingItem,getBookkeepingItemById } = require('./controllers/controler_bookkeeping');
-const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,getConsultoriaById } = require('./controllers/controler_consultoria');
-const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado,getCertificadoById} = require('./controllers/controler_certificados');
-const { createConsulting,getAllConsultingItems,deleteConsultingItem,updateConsultingItem,getConsultingItemById} = require('./controllers/controler_consulting');
-const { getComentarios,createComentario,deleteComentario,updateComentario,getComentarioById} = require('./controllers/controler_comentarios');
-const { createAgendamentos,getAgendamentos,deleteAgendamentos,updateAgendamentos,getAgendamentoById} = require('./controllers/controler_agendamentos');
-const app = express() 
+const { getAdms, createAdm, deleteAdm, updateAdm, getAdmById,
+  getDepoiments, createDepoiments, deleteDepoiments, updateDepoiments, getDepoimentoById,
+  getContact, createContact, deleteContact, getContactById, } = require('./controllers/controlers_tables');
+const { Login, verificarToken } = require('./controllers/controler_login');
+const { createColaborador, getAllColaboradores, deleteColaborador, updateColaborador, getColaboradorById,
+  createServicos, getAllServicos, deleteServicos, updateServicos, getServicoById,
+  createEbook, getAllEbooks, deleteEbook, updateEbook, getEbookById,
+  deleteImageFromStorage, deletePDFFromStorage } = require('./controllers/controler_images');
+const { createBlogPost, getAllBlogPosts, deleteBlogPost, updateBlogPost, getBlogPostById } = require('./controllers/controler_blog');
+const { createBookkeeping, getAllBookkeepingItems, deleteBookkeepingItem, updateBookkeepingItem, getBookkeepingItemById } = require('./controllers/controler_bookkeeping');
+const { createConsultoria, getConsultoria, deleteConsultoria, updateConsultoria, getConsultoriaById } = require('./controllers/controler_consultoria');
+const { createCertificado, getAllCertificados, deleteCertificado, updateCertificado, getCertificadoById } = require('./controllers/controler_certificados');
+const { createConsulting, getAllConsultingItems, deleteConsultingItem, updateConsultingItem, getConsultingItemById } = require('./controllers/controler_consulting');
+const { getComentarios, createComentario, deleteComentario, updateComentario, getComentarioById } = require('./controllers/controler_comentarios');
+const { createAgendamentos, getAgendamentos, deleteAgendamentos, updateAgendamentos, getAgendamentoById } = require('./controllers/controler_agendamentos');
+const app = express()
 const jwt = require('jsonwebtoken');
 
 app.use(cors());
@@ -39,39 +39,33 @@ app.post('/login', async (req, res) => {
 
     const token = await Login(email, senha); // Chama a função Login para obter o token
 
-    if (token) 
-    {
+    if (token) {
       res.json({ token }); // Retorna o token para o cliente em vez de redirecionar
-    } 
-    else 
-    {
+    }
+    else {
       res.status(401).send('Email ou senha inválido!'); // Retorna erro de autenticação
     }
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Error during login:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
-app.get('/adms',  verificarToken, async (req, res) => {
+app.get('/adms', verificarToken, async (req, res) => {
   try {
 
     const users = await getAdms();
 
-    if (users) 
-    {
+    if (users) {
       res.json(JSON.parse(users)); // Envia a resposta como JSON para o cliente
-    } 
-    
-    else 
-    {
+    }
+
+    else {
       res.status(500).json({ error: 'Erro ao buscar usuários.' });
     }
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao buscar usuários:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
@@ -83,17 +77,16 @@ app.post('/adms/create', verificarToken, async (req, res) => {
   try {
 
     // Recupera os dados do corpo da requisição
-    const {usuario,email, senha} = req.body;
-    
+    const { usuario, email, senha } = req.body;
+
     // Chama a função createUser para criar um novo usuário
-    const newUser = await createAdm(usuario,email,senha);
+    const newUser = await createAdm(usuario, email, senha);
 
     // Retorna o novo usuário como resposta da requisição
     res.json(newUser);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao criar um novo usuário:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao criar um novo usuário' });
@@ -113,9 +106,8 @@ app.delete('/adms/:id', verificarToken, async (req, res) => {
     // Retorna o usuário excluído como resposta da requisição
     res.json(dUser);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao excluir o usuário:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao excluir o usuário' });
@@ -128,7 +120,7 @@ app.put('/adms/:id', verificarToken, async (req, res) => {
   try {
 
     const id = req.params.id;
-    const {usuario,email, senha} = req.body;
+    const { usuario, email, senha } = req.body;
 
     // Chama a função updateUser para atualizar o usuário
     await updateAdm(id, usuario, email, senha);
@@ -136,9 +128,8 @@ app.put('/adms/:id', verificarToken, async (req, res) => {
     // Retorna uma resposta de sucesso
     res.json({ message: 'Usuário atualizado com sucesso' });
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao atualizar o usuário:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao atualizar o usuário' });
@@ -172,17 +163,14 @@ app.get('/depoiments', async (req, res) => {
 
     const users = await getDepoiments();
 
-    if (users) 
-    {
+    if (users) {
       res.json(JSON.parse(users)); // Envia a resposta como JSON para o cliente
-    } 
-    else 
-    {
+    }
+    else {
       res.status(500).json({ error: 'Erro ao buscar depoimentos.' });
     }
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao buscar depoimentos:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
@@ -193,17 +181,16 @@ app.post('/depoiments/create', verificarToken, async (req, res) => {
 
   try {
     // Recupera os dados do corpo da requisição
-    const {nome,texto} = req.body;
-    
+    const { nome, texto } = req.body;
+
     // Chama a função createDepoiment para criar um novo depoimento
-    const newDepoiment = await createDepoiments(nome,texto);
+    const newDepoiment = await createDepoiments(nome, texto);
 
     // Retorna o novo depoimento como resposta da requisição
     res.json(newDepoiment);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao criar um novo depoimento:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao criar um novo depoimento' });
@@ -223,9 +210,8 @@ app.delete('/depoiments/:id', verificarToken, async (req, res) => {
     // Retorna o usuário excluído como resposta da requisição
     res.json(dUser);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao excluir o depoimento:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao excluir o depoimento' });
@@ -239,7 +225,7 @@ app.put('/depoiments/:id', verificarToken, async (req, res) => {
   try {
 
     const id = req.params.id;
-    const {nome,texto} = req.body;
+    const { nome, texto } = req.body;
 
     // Chama a função updateDepoiment para atualizar o depoimento
     await updateDepoiments(id, nome, texto);
@@ -247,9 +233,8 @@ app.put('/depoiments/:id', verificarToken, async (req, res) => {
     // Retorna uma resposta de sucesso
     res.json({ message: 'Depoimento atualizado com sucesso' });
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao atualizar o depoimento:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao atualizar o depoimento' });
@@ -283,17 +268,14 @@ app.get('/contacts', verificarToken, async (req, res) => {
 
     const contacts = await getContact();
 
-    if (contacts) 
-    {
+    if (contacts) {
       res.json(JSON.parse(contacts)); // Envia a resposta como JSON para o cliente
-    } 
-    else 
-    {
+    }
+    else {
       res.status(500).json({ error: 'Erro ao buscar os contatos.' });
     }
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao buscar os contatos:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
@@ -304,17 +286,16 @@ app.post('/contacts/create', async (req, res) => {
 
   try {
     // Recupera os dados do corpo da requisição
-    const {nome,sobrenome,email,assunto} = req.body;
-    
+    const { nome, sobrenome, email, assunto } = req.body;
+
     // Chama a função createContact para criar um novo contato do cliente
-    const newContact = await createContact(nome,sobrenome,email,assunto);
+    const newContact = await createContact(nome, sobrenome, email, assunto);
 
     // Retorna o novo contato do cliente como resposta da requisição
     res.json(newContact);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao criar um novo contato:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao criar um novo contato' });
@@ -330,13 +311,12 @@ app.delete('/contacts/:id', verificarToken, async (req, res) => {
 
     // Chama a função deleteContact para excluir o contato do cliente
     const dContact = await deleteContact(id);
-    
+
     // Retorna o contato do cliente excluído como resposta da requisição
     res.json(dContact);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao excluir o contato:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao excluir o contato' });
@@ -389,17 +369,14 @@ app.get('/colaboradores', async (req, res) => {
 
     const colaboradores = await getAllColaboradores();
 
-    if (colaboradores) 
-    {
+    if (colaboradores) {
       res.json(JSON.parse(colaboradores)); // Envia a resposta como JSON para o cliente
-    } 
-    else 
-    {
+    }
+    else {
       res.status(500).json({ error: 'Erro ao buscar os contatos.' });
     }
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao buscar os contatos:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
@@ -414,13 +391,12 @@ app.delete('/colaboradores/:id', verificarToken, async (req, res) => {
 
     // Chama a função deleteContact para excluir o colaborador
     const dContact = await deleteColaborador(id);
-    
+
     // Retorna o colaborador excluído como resposta da requisição
     res.json(dContact);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao excluir o colaborador:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao excluir o colaborador' });
@@ -442,9 +418,8 @@ app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (re
 
     // Retorna o novo Colaborador como resposta da requisição
     res.json(upColaborador);
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao atualizar o contato:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao atualizar o contato' });
@@ -497,17 +472,14 @@ app.get('/servicos', async (req, res) => {
 
     const servicos = await getAllServicos();
 
-    if (servicos) 
-    {
+    if (servicos) {
       res.json(JSON.parse(servicos)); // Envia a resposta como JSON para o cliente
-    } 
-    else 
-    {
+    }
+    else {
       res.status(500).json({ error: 'Erro ao buscar os Serviços.' });
     }
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao buscar os contatos:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
@@ -522,14 +494,13 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
 
     // Chama a função deleteServicos para excluir o serviço
     const dServico = await deleteServicos(id);
-    
+
     // Retorna o serviço excluído como resposta da requisição
     res.json(dServico);
     await deleteImageFromStorage(dServico.nome_arquivo_imagem);
 
-  } 
-  catch (error) 
-  {
+  }
+  catch (error) {
     console.error('Erro ao excluir o serviço:', error);
     // Retorna uma resposta de erro com status 500
     res.status(500).json({ error: 'Erro ao excluir o serviço' });
@@ -579,26 +550,26 @@ app.get('/servicos/:id', verificarToken, async (req, res) => {
 
 app.post('/ebooks/create', verificarToken, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
-      const id = req.params.id;
-      const { titulo, descricao } = req.body;
-      let pdfBuffer, pdfName, imagemBuffer, imageName;
+    const id = req.params.id;
+    const { titulo, descricao } = req.body;
+    let pdfBuffer, pdfName, imagemBuffer, imageName;
 
-      if (req.files['pdf'] && req.files['pdf'][0]) {
-          pdfBuffer = req.files['pdf'][0].buffer;
-          pdfName = req.files['pdf'][0].originalname;
-      }
+    if (req.files['pdf'] && req.files['pdf'][0]) {
+      pdfBuffer = req.files['pdf'][0].buffer;
+      pdfName = req.files['pdf'][0].originalname;
+    }
 
-      if (req.files['imagem'] && req.files['imagem'][0]) {
-          imagemBuffer = req.files['imagem'][0].buffer;
-          imageName = req.files['imagem'][0].originalname;
-      }
+    if (req.files['imagem'] && req.files['imagem'][0]) {
+      imagemBuffer = req.files['imagem'][0].buffer;
+      imageName = req.files['imagem'][0].originalname;
+    }
 
-      const novoEbook = await createEbook(titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
+    const novoEbook = await createEbook(titulo, descricao, pdfBuffer, pdfName, imagemBuffer, imageName);
 
-      res.json(novoEbook);
+    res.json(novoEbook);
   } catch (error) {
-      console.error('Erro ao criar um novo ebook:', error);
-      res.status(500).json({ error: 'Erro ao criar um novo ebook' });
+    console.error('Erro ao criar um novo ebook:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo ebook' });
   }
 });
 
@@ -619,7 +590,7 @@ app.delete('/ebooks/:id', verificarToken, async (req, res) => {
     const deletedEbook = await deleteEbook(id);
 
     res.json(deletedEbook);
-    
+
     await deletePDFFromStorage(deletedEbook.nome_arquivo_pdf);
     await deleteImageFromStorage(deletedEbook.nome_arquivo_imagem);
   } catch (error) {
@@ -674,8 +645,8 @@ app.post('/blog/create', verificarToken, upload.fields([{ name: 'imagem', maxCou
     let imagemBuffer, imageName;
 
     if (req.files['imagem'] && req.files['imagem'][0]) {
-        imagemBuffer = req.files['imagem'][0].buffer;
-        imageName = req.files['imagem'][0].originalname;
+      imagemBuffer = req.files['imagem'][0].buffer;
+      imageName = req.files['imagem'][0].originalname;
     }
 
     const newBlogPost = await createBlogPost(titulo, texto, imagemBuffer, imageName);
@@ -858,7 +829,7 @@ app.get('/consultoria', async (req, res) => {
   }
 });
 
-app.post('/consultoria/create',verificarToken, async (req, res) => {
+app.post('/consultoria/create', verificarToken, async (req, res) => {
   try {
     const { texto1, texto2, texto3, texto4 } = req.body;
     const newConsultoria = await createConsultoria(texto1, texto2, texto3, texto4);
@@ -869,7 +840,7 @@ app.post('/consultoria/create',verificarToken, async (req, res) => {
   }
 });
 
-app.delete('/consultoria/:id',verificarToken, async (req, res) => {
+app.delete('/consultoria/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const deletedConsultoria = await deleteConsultoria(id);
@@ -880,7 +851,7 @@ app.delete('/consultoria/:id',verificarToken, async (req, res) => {
   }
 });
 
-app.put('/consultoria/:id',verificarToken, async (req, res) => {
+app.put('/consultoria/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const { texto1, texto2, texto3, texto4 } = req.body;
@@ -892,7 +863,7 @@ app.put('/consultoria/:id',verificarToken, async (req, res) => {
   }
 });
 
-app.get('/consultoria/:id',verificarToken, async (req, res) => {
+app.get('/consultoria/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const consultoria = await getConsultoriaById(id);
@@ -910,76 +881,76 @@ app.get('/consultoria/:id',verificarToken, async (req, res) => {
 
 //////////////////////////
 
-app.post('/certificados/create',verificarToken, upload.single('imagem'), async (req, res) => {
+app.post('/certificados/create', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
-      const imagemBuffer = req.file.buffer;
-      const nomeArquivo = req.file.originalname;
+    const imagemBuffer = req.file.buffer;
+    const nomeArquivo = req.file.originalname;
 
-      const newCertificado = await createCertificado(imagemBuffer, nomeArquivo);
+    const newCertificado = await createCertificado(imagemBuffer, nomeArquivo);
 
-      res.json(newCertificado);
+    res.json(newCertificado);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Erro ao criar certificado.' });
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar certificado.' });
   }
 });
 
 app.get('/certificados', async (req, res) => {
   try {
-      const certificados = await getAllCertificados();
+    const certificados = await getAllCertificados();
 
-      if (certificados) {
-          res.json(JSON.parse(certificados));
-      } else {
-          res.status(500).json({ error: 'Erro ao buscar os certificados.' });
-      }
+    if (certificados) {
+      res.json(JSON.parse(certificados));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar os certificados.' });
+    }
   } catch (error) {
-      console.error('Erro ao buscar os certificados:', error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+    console.error('Erro ao buscar os certificados:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
 
-app.delete('/certificados/:id',verificarToken, async (req, res) => {
+app.delete('/certificados/:id', verificarToken, async (req, res) => {
   try {
-      const id = req.params.id;
-      const deletedCertificado = await deleteCertificado(id);
-      res.json(deletedCertificado);
+    const id = req.params.id;
+    const deletedCertificado = await deleteCertificado(id);
+    res.json(deletedCertificado);
   } catch (error) {
-      console.error('Erro ao excluir o certificado:', error);
-      res.status(500).json({ error: 'Erro ao excluir o certificado.' });
+    console.error('Erro ao excluir o certificado:', error);
+    res.status(500).json({ error: 'Erro ao excluir o certificado.' });
   }
 });
 
 app.put('/certificados/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
   try {
-      const id = req.params.id;
+    const id = req.params.id;
 
 
-      const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
-      const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
 
-      const updatedCertificado = await updateCertificado(id, imagemBuffer, imageName);
+    const updatedCertificado = await updateCertificado(id, imagemBuffer, imageName);
 
-      res.json(updatedCertificado);
+    res.json(updatedCertificado);
   } catch (error) {
-      console.error('Erro ao atualizar o certificado:', error);
-      res.status(500).json({ error: 'Erro ao atualizar o certificado.' });
+    console.error('Erro ao atualizar o certificado:', error);
+    res.status(500).json({ error: 'Erro ao atualizar o certificado.' });
   }
 });
 
 app.get('/certificados/:id', verificarToken, async (req, res) => {
   try {
-      const id = req.params.id;
-      const certificado = await getCertificadoById(id);
+    const id = req.params.id;
+    const certificado = await getCertificadoById(id);
 
-      if (certificado) {
-          res.json(JSON.parse(certificado));
-      } else {
-          res.status(404).json({ error: 'Certificado não encontrado.' });
-      }
+    if (certificado) {
+      res.json(JSON.parse(certificado));
+    } else {
+      res.status(404).json({ error: 'Certificado não encontrado.' });
+    }
   } catch (error) {
-      console.error('Erro ao buscar certificado pelo ID:', error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+    console.error('Erro ao buscar certificado pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
 
@@ -1082,14 +1053,14 @@ app.get('/comentarios/:idPost', async (req, res) => {
   }
 });
 
-app.post('/comentarios/create/:idPost', async (req, res) => {
+app.post('/comentarios/create', async (req, res) => {
   try {
     // Recupera os dados do corpo da requisição
     const { texto } = req.body;
-    const idPost = req.params.idPost;
+    const { id } = req.body;
 
     // Chama a função createComentario para criar um novo comentário associado ao ID_POST
-    const newComentario = await createComentario(idPost, texto);
+    const newComentario = await createComentario(id, texto);
 
     // Retorna o novo comentário como resposta da requisição
     res.json(newComentario);
@@ -1218,7 +1189,7 @@ app.get('/agendamentos/:id', async (req, res) => {
 
 
 app.listen(port, () => {
-   
+
   console.log("Servidor inciado na portta", port);
 
 })
