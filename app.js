@@ -1082,7 +1082,7 @@ app.get('/comentarios/:idPost', async (req, res) => {
   }
 });
 
-app.post('/comentarios/create/:idPost', verificarToken, async (req, res) => {
+app.post('/comentarios/create/:idPost', async (req, res) => {
   try {
     // Recupera os dados do corpo da requisição
     const { texto } = req.body;
