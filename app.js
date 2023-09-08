@@ -420,7 +420,7 @@ app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (re
     const upColaborador = await updateColaborador(id, nome, funcao, imagemBuffer, nameFile);
 
     // Retorna o novo Colaborador como resposta da requisição
-    res.json(upColaborador);
+    res.json(JSON.parse(upColaborador));
   }
   catch (error) {
     console.error('Erro ao atualizar o contato:', error);
