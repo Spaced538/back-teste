@@ -16,6 +16,9 @@ const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado
 const { createConsulting,getAllConsultingItems,deleteConsultingItem,updateConsultingItem,getConsultingItemById} = require('./controllers/controler_consulting');
 const { getComentarios,createComentario,deleteComentario,updateComentario,getComentarioById} = require('./controllers/controler_comentarios');
 const { createAgendamentos,getAgendamentos,deleteAgendamentos,updateAgendamentos,getAgendamentoById} = require('./controllers/controler_agendamentos');
+const { createOurTeamEntry,getAllOurTeamEntries,deleteOurTeamEntry,updateOurTeamEntry,getOurTeamEntryById} = require('./controllers/controler_nosso_time');
+const { getQuemSomos,createQuemSomos,deleteQuemSomos,updateQuemSomos,getQuemSomosById} = require('./controllers/controler_quem_somos');
+const { createValor,getValor,deleteValor,updateValor,getValorById} = require('./controllers/controler_valor');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -1210,6 +1213,257 @@ app.get('/agendamentos/:id', async (req, res) => {
     }
   } catch (error) {
     console.error('Erro ao buscar agendamento pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+///////////////////////////////////////////////
+
+app.post('/our_team/create', verificarToken, upload.single('imagem'), async (req, res) => {
+  try {
+    const { texto } = req.body;
+    const imagemBuffer = req.file.buffer;
+    const nomeArquivoImagem = req.file.originalname;
+
+    const newEntry = await createOurTeamEntry(texto, imagemBuffer, nomeArquivoImagem);
+
+    res.json(newEntry);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar entrada em nosso_time.' });
+  }
+});
+
+app.get('/our_team', async (req, res) => {
+  try {
+    const entries = await getAllOurTeamEntries();
+
+    if (entries) {
+      res.json(JSON.parse(entries));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar entradas em nosso_time.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar entradas em nosso_time:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.delete('/our_team/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const deletedEntry = await deleteOurTeamEntry(id);
+
+    res.json(deletedEntry);
+    await deleteImageFromStorage(deletedEntry.nome_arquivo_imagem);
+
+  } catch (error) {
+    console.error('Erro ao excluir entrada em nosso_time:', error);
+    res.status(500).json({ error: 'Erro ao excluir entrada em nosso_time' });
+  }
+});
+
+app.put('/our_team/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const { texto } = req.body;
+
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
+
+    const updatedEntry = await updateOurTeamEntry(id, texto, imagemBuffer, imageName);
+
+    res.json(updatedEntry);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar nosso_time.' });
+  }
+});
+
+app.get('/our_team/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const entry = await getOurTeamEntryById(id);
+
+    if (entry) {
+      res.json(JSON.parse(entry));
+    } else {
+      res.status(404).json({ error: 'Entrada em nosso_time não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar entrada em nosso_time pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+/////////////////////////////////////
+
+// Rota para buscar todas as informações de "quem_somos"
+app.get('/quem_somos', async (req, res) => {
+  try {
+    const infos = await getQuemSomos();
+
+    if (infos) {
+      res.json(JSON.parse(infos)); // Envia a resposta como JSON para o cliente
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar informações de "quem_somos".' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar informações de "quem_somos":', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para criar uma nova informação em "quem_somos"
+app.post('/quem_somos/create', verificarToken, async (req, res) => {
+  try {
+    // Recupera os dados do corpo da requisição
+    const { texto } = req.body;
+
+    // Chama a função createQuemSomos para criar uma nova informação em "quem_somos"
+    const newInfo = await createQuemSomos(texto);
+
+    // Retorna a nova informação como resposta da requisição
+    res.json(newInfo);
+  } catch (error) {
+    console.error('Erro ao criar uma nova informação em "quem_somos":', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao criar uma nova informação em "quem_somos".' });
+  }
+});
+
+// Rota para excluir uma informação em "quem_somos" pelo ID
+app.delete('/quem_somos/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função deleteQuemSomos para excluir a informação em "quem_somos" pelo ID
+    const deletedInfo = await deleteQuemSomos(id);
+
+    // Retorna a informação excluída como resposta da requisição
+    res.json(deletedInfo);
+  } catch (error) {
+    console.error('Erro ao excluir a informação em "quem_somos":', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao excluir a informação em "quem_somos".' });
+  }
+});
+
+// Rota para atualizar uma informação em "quem_somos" pelo ID
+app.put('/quem_somos/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { texto } = req.body;
+
+    // Chama a função updateQuemSomos para atualizar a informação em "quem_somos" pelo ID
+    await updateQuemSomos(id, texto);
+
+    // Retorna uma resposta de sucesso
+    res.json({ message: 'Informação em "quem_somos" atualizada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar a informação em "quem_somos":', error);
+    // Retorna uma resposta de erro com status 500
+    res.status(500).json({ error: 'Erro ao atualizar a informação em "quem_somos".' });
+  }
+});
+
+// Rota para obter uma informação em "quem_somos" pelo ID
+app.get('/quem_somos/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // Chama a função getQuemSomosById para obter a informação em "quem_somos" pelo ID
+    const info = await getQuemSomosById(id);
+
+    if (info) {
+      res.json(JSON.parse(info)); // Retorna a informação encontrada como resposta
+    } else {
+      res.status(404).json({ error: 'Informação em "quem_somos" não encontrada.' }); // Retorna erro 404 se a informação não for encontrada
+    }
+  } catch (error) {
+    console.error('Erro ao buscar informação em "quem_somos" pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+///////////////////////////////
+
+// Rota para buscar todos os valores
+app.get('/valor', async (req, res) => {
+  try {
+    const valores = await getValor();
+
+    if (valores) {
+      res.json(JSON.parse(valores));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar valores.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar valores:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para criar um novo valor
+app.post('/valor/create', verificarToken, async (req, res) => {
+  try {
+    const { texto } = req.body;
+
+    const novoValor = await createValor(texto);
+
+    res.json(novoValor);
+  } catch (error) {
+    console.error('Erro ao criar um novo valor:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo valor.' });
+  }
+});
+
+// Rota para excluir um valor pelo ID
+app.delete('/valor/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const valorExcluido = await deleteValor(id);
+
+    res.json(valorExcluido);
+  } catch (error) {
+    console.error('Erro ao excluir valor:', error);
+    res.status(500).json({ error: 'Erro ao excluir valor.' });
+  }
+});
+
+// Rota para atualizar um valor pelo ID
+app.put('/valor/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { texto } = req.body;
+
+    await updateValor(id, texto);
+
+    res.json({ message: 'Valor atualizado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar valor:', error);
+    res.status(500).json({ error: 'Erro ao atualizar valor.' });
+  }
+});
+
+// Rota para buscar um valor pelo ID
+app.get('/valor/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const valor = await getValorById(id);
+
+    if (valor) {
+      res.json(JSON.parse(valor));
+    } else {
+      res.status(404).json({ error: 'Valor não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar valor pelo ID:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
