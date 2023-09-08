@@ -153,51 +153,66 @@ const deleteColaborador = async (id) => {
 };
 
 const updateColaborador = async (id, nome, funcao, imagemBuffer, nameFile) => {
-    try {
-      const client = await pool.connect();
+  try {
+    const client = await pool.connect();
 
-      // Verifique se o colaborador existe
-      const checkColaboradorQuery = 'SELECT * FROM colaborador WHERE id = $1';
-      const checkColaboradorResult = await client.query(checkColaboradorQuery, [id]);
+    // Verifique se o colaborador existe
+    const checkColaboradorQuery = 'SELECT * FROM colaborador WHERE id = $1';
+    const checkColaboradorResult = await client.query(checkColaboradorQuery, [id]);
 
-      if (checkColaboradorResult.rows.length === 0) {
-          throw new Error('Colaborador não encontrado.');
-      }
-
-      // Se uma nova imagem foi fornecida, exclua a imagem existente e faça upload da nova
-      if (imagemBuffer) {
-          const imageFileName = checkColaboradorResult.rows[0].nome_arquivo_imagem;
-          await deleteImageFromStorage(imageFileName);
-
-          const newNameFile = `${Date.now()}_${nameFile}`;
-          const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
-
-          // Atualizar as informações do colaborador no banco de dados
-          const updateQuery = 'UPDATE colaborador SET nome = $2, funcao = $3, nome_arquivo_imagem = $4, url_imagem = $5 WHERE id = $1 RETURNING *';
-          const updateValues = [id, nome, funcao, newNameFile, imageUrl];
-          const result = await client.query(updateQuery, updateValues);
-
-          // Libera a conexão de volta para o pool
-          client.release();
-
-          return result.rows[0];
-      } else {
-          // Atualizar as informações do colaborador no banco de dados sem alterar a imagem
-          const updateQuery = 'UPDATE colaborador SET nome = $2, funcao = $3 WHERE id = $1 RETURNING *';
-          const updateValues = [id, nome, funcao];
-          const result = await client.query(updateQuery, updateValues);
-
-          // Libera a conexão de volta para o pool
-          client.release();
-
-          return result.rows[0];
-      }
-
-
-    } catch (error) {
-        console.error(error);
-        throw new Error('Erro ao atualizar colaborador.');
+    if (checkColaboradorResult.rows.length === 0) {
+      throw new Error('Colaborador não encontrado.');
     }
+
+    // Se uma nova imagem foi fornecida, exclua a imagem existente e faça upload da nova
+    if (imagemBuffer) {
+      const imageFileName = checkColaboradorResult.rows[0].nome_arquivo_imagem;
+      await deleteImageFromStorage(imageFileName);
+
+      const newNameFile = `${Date.now()}_${nameFile}`;
+      const imageUrl = await uploadImageToStorage(imagemBuffer, newNameFile);
+
+      // Atualizar as informações do colaborador no banco de dados
+      const updateQuery = `
+        UPDATE colaborador
+        SET nome = COALESCE($2, nome),
+            funcao = COALESCE($3, funcao),
+            nome_arquivo_imagem = COALESCE($4, nome_arquivo_imagem),
+            url_imagem = COALESCE($5, url_imagem)
+        WHERE id = $1
+        RETURNING *
+      `;
+
+      const updateValues = [id, nome || null, funcao || null, newNameFile, imageUrl];
+      const result = await client.query(updateQuery, updateValues);
+
+      // Libera a conexão de volta para o pool
+      client.release();
+
+      return result.rows[0];
+    } else {
+      // Atualizar as informações do colaborador no banco de dados sem alterar a imagem
+      const updateQuery = `
+        UPDATE colaborador
+        SET nome = COALESCE($2, nome),
+            funcao = COALESCE($3, funcao)
+        WHERE id = $1
+        RETURNING *
+      `;
+
+      const updateValues = [id, nome || null, funcao || null];
+      const result = await client.query(updateQuery, updateValues);
+
+      // Libera a conexão de volta para o pool
+      client.release();
+
+      return result.rows[0];
+
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error('Erro ao atualizar colaborador.');
+  }
 };
 
 const getColaboradorById = async (id) => {
@@ -355,6 +370,7 @@ const updateServicos = async (id, nome, preco, imagemBuffer, imageName) => {
       throw new Error('Erro ao atualizar serviço.');
   }
 };
+
 
 const getServicoById = async (id) => {
   try {

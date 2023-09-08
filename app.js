@@ -420,7 +420,7 @@ app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (re
     const upColaborador = await updateColaborador(id, nome, funcao, imagemBuffer, nameFile);
 
     // Retorna o novo Colaborador como resposta da requisição
-    res.json(JSON.parse(upColaborador));
+    res.json(upColaborador);
   }
   catch (error) {
     console.error('Erro ao atualizar o contato:', error);
@@ -510,25 +510,29 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
   }
 });
 
-app.put('/servicos/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+// Configuração da rota para atualizar um colaborador
+app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+
   try {
     const id = req.params.id;
 
-    const { nome, preco } = req.body;
-    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
-    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
+    const { nome, funcao } = req.body;
+    const imagemBuffer = req.file ? req.file.buffer : undefined;
+    const nameFile = req.file ? req.file.originalname : undefined;
 
-    // Chama a função updateServico para atualizar o serviço com as atualizações fornecidas
-    const updatedService = await updateServicos(id, nome, preco, imagemBuffer, imageName);
+    // Chama a função updateColaborador para atualizar um novo Colaborador
+    const updatedColaborador = await updateColaborador(id, nome, funcao, imagemBuffer, nameFile);
 
-    // Retorna o serviço atualizado como resposta da requisição
-    res.json(updatedService);
-  } catch (error) {
-    console.error('Erro ao atualizar o serviço:', error);
+    // Retorna o novo Colaborador como resposta da requisição
+    res.json(updatedColaborador);
+  }
+  catch (error) {
+    console.error('Erro ao atualizar o colaborador:', error);
     // Retorna uma resposta de erro com status 500
-    res.status(500).json({ error: 'Erro ao atualizar o serviço' });
+    res.status(500).json({ error: 'Erro ao atualizar o colaborador' });
   }
 });
+
 
 // Configuração da rota para obter um serviço pelo ID
 app.get('/servicos/:id', verificarToken, async (req, res) => {
