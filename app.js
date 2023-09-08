@@ -19,6 +19,7 @@ const { createAgendamentos,getAgendamentos,deleteAgendamentos,updateAgendamentos
 const { createOurTeamEntry,getAllOurTeamEntries,deleteOurTeamEntry,updateOurTeamEntry,getOurTeamEntryById} = require('./controllers/controler_nosso_time');
 const { getQuemSomos,createQuemSomos,deleteQuemSomos,updateQuemSomos,getQuemSomosById} = require('./controllers/controler_quem_somos');
 const { createValor,getValor,deleteValor,updateValor,getValorById} = require('./controllers/controler_valor');
+const { getConfiguracoes,createConfiguracao,deleteConfiguracao,updateConfiguracao,getConfiguracaoById} = require('./controllers/controler_configuracao');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -1442,6 +1443,74 @@ app.get('/valor/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+///////////////////////////////////////////
+
+app.get('/configuracoes', async (req, res) => {
+  try {
+    const configuracoes = await getConfiguracoes();
+    if (configuracoes) {
+      res.json(JSON.parse(configuracoes));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar configurações.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar configurações:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.post('/configuracoes/create', async (req, res) => {
+  try {
+    const {email, senha } = req.body;
+    const newConfiguracao = await createConfiguracao(email, senha);
+    res.json(JSON.parse(newConfiguracao));
+  } catch (error) {
+    console.error('Erro ao criar uma nova configuração:', error);
+    res.status(500).json({ error: 'Erro ao criar uma nova configuração.' });
+  }
+});
+
+
+app.delete('/configuracoes/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedConfiguracao = await deleteConfiguracao(id);
+    res.json(JSON.parse(deletedConfiguracao));
+  } catch (error) {
+    console.error('Erro ao excluir a configuração:', error);
+    res.status(500).json({ error: 'Erro ao excluir a configuração.' });
+  }
+});
+
+app.put('/configuracoes/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { email, senha } = req.body;
+    await updateConfiguracao(id, email, senha);
+    res.json({ message: 'Configuração atualizada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar a configuração:', error);
+    res.status(500).json({ error: 'Erro ao atualizar a configuração.' });
+  }
+});
+
+
+app.get('/configuracoes/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const configuracao = await getConfiguracaoById(id);
+    if (configuracao) {
+      res.json(JSON.parse(configuracao));
+    } else {
+      res.status(404).json({ error: 'Configuração não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar configuração pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 
 
