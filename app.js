@@ -439,7 +439,7 @@ app.get('/colaboradores/:id', verificarToken, async (req, res) => {
     const colaborador = await getColaboradorById(id);
 
     if (colaborador) {
-      res.json(colaborador); // Retorna o colaborador encontrado como resposta
+      res.json(JSON.parse(colaborador)); // Retorna o colaborador encontrado como resposta
     } else {
       res.status(404).json({ error: 'Colaborador não encontrado.' }); // Retorna erro 404 se o colaborador não for encontrado
     }
