@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors');
 const multer = require('multer');
+const nodemailer = require('nodemailer');
 const { getAdms,createAdm,deleteAdm,updateAdm,getAdmById,
         getDepoiments,createDepoiments,deleteDepoiments,updateDepoiments,getDepoimentoById,
         getContact,createContact,deleteContact,getContactById, } = require('./controllers/controlers_tables');
@@ -27,6 +28,17 @@ app.use(cors());
 app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+// Configuração do transporte de email
+const transporter = nodemailer.createTransport({
+  host: 'smtp.example.com', // Substitua com o host do seu servidor SMTP
+  port: 587, // Substitua com a porta do seu servidor SMTP
+  secure: false, // Se for true, use 465 em vez de 587
+  auth: {
+    user: 'seu_email@example.com', // Substitua com seu endereço de email
+    pass: 'sua_senha_de_email', // Substitua com sua senha de email
+  },
+});
 
 const port = 8000
 
@@ -285,7 +297,6 @@ app.get('/contacts', verificarToken, async (req, res) => {
   }
 });
 
-// Configuração da rota para criar um contato do cliente
 app.post('/contacts/create', async (req, res) => {
 
   try {
@@ -296,7 +307,7 @@ app.post('/contacts/create', async (req, res) => {
     const newContact = await createContact(nome, sobrenome, email, assunto);
 
     // Retorna o novo contato do cliente como resposta da requisição
-    res.json(newContact);
+    res.json(JSON.parse(newContact));
 
   }
   catch (error) {
@@ -317,7 +328,7 @@ app.delete('/contacts/:id', verificarToken, async (req, res) => {
     const dContact = await deleteContact(id);
 
     // Retorna o contato do cliente excluído como resposta da requisição
-    res.json(dContact);
+    res.json(JSON.parse(dContact));
 
   }
   catch (error) {
@@ -336,7 +347,7 @@ app.get('/contacts/:id', async (req, res) => {
     const contato = await getContactById(id);
 
     if (contato) {
-      res.json(contato); // Retorna o contato do cliente encontrado como resposta
+      res.json(JSON.parse(contato)); // Retorna o contato do cliente encontrado como resposta
     } else {
       res.status(404).json({ error: 'Contato do cliente não encontrado.' }); // Retorna erro 404 se o contato do cliente não for encontrado
     }
@@ -1508,6 +1519,54 @@ app.get('/configuracoes/:id', async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar configuração pelo ID:', error);
     res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+/////////////////////////////
+
+app.post('/contacts/emails/create', async (req, res) => {
+  try {
+    // Recupera os dados do corpo da requisição
+    const { nome, sobrenome, email, assunto } = req.body;
+
+    // Obter as configurações de email do banco de dados
+    const configuracoes = await getConfiguracoes();
+    const config = JSON.parse(configuracoes);
+
+    if (!configuracoes) {
+      return res.status(500).json({ error: 'Erro ao buscar configurações de email' });
+    }
+
+    // Configuração dos dados do email
+    const mailOptions = {
+      from: config[0].email, // Endereço de email do remetente
+      to: config[0].email, // Endereço de email do destinatário
+      subject: `${nome} ${sobrenome}`,
+      text: `Um novo contato foi feito.\n 
+      Nome: ${nome} ${sobrenome}. \n
+      E-mail: ${email} \n
+      Assunto: ${assunto}`
+    };
+
+    // Configuração de autenticação com o email e senha obtidos das configurações
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com', // Substitua com o host do seu servidor SMTP
+      port: 587, // Substitua com a porta do seu servidor SMTP
+      secure: false, // Se for true, use 465 em vez de 587
+      auth: {
+        user: config[0].email, // Endereço de email do remetente
+        pass: config[0].senha, // Senha do email do remetente
+      },
+    });
+
+    // Enviar o email usando o Nodemailer
+    await transporter.sendMail(mailOptions);
+
+    // Retorna o novo contato do cliente como resposta da requisição
+    res.json({ message: 'Mensagem de contato enviada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao criar um novo contato:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo contato' });
   }
 });
 
