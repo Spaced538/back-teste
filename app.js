@@ -21,6 +21,7 @@ const { createOurTeamEntry,getAllOurTeamEntries,deleteOurTeamEntry,updateOurTeam
 const { getQuemSomos,createQuemSomos,deleteQuemSomos,updateQuemSomos,getQuemSomosById} = require('./controllers/controler_quem_somos');
 const { createValor,getValor,deleteValor,updateValor,getValorById} = require('./controllers/controler_valor');
 const { getConfiguracoes,createConfiguracao,deleteConfiguracao,updateConfiguracao,getConfiguracaoById} = require('./controllers/controler_configuracao');
+const { getVisibilidade,updateVisibilidadeAtivo,getVisibilidadeById,createVisibilidade} = require('./controllers/controler_visibilidade');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -1507,7 +1508,7 @@ app.put('/configuracoes/:id', verificarToken, async (req, res) => {
 });
 
 
-app.get('/configuracoes/:id', async (req, res) => {
+app.get('/configuracoes/:id', verificarToken, async (req, res) => {
   try {
     const id = req.params.id;
     const configuracao = await getConfiguracaoById(id);
@@ -1567,6 +1568,68 @@ app.post('/contacts/emails/create', async (req, res) => {
   } catch (error) {
     console.error('Erro ao criar um novo contato:', error);
     res.status(500).json({ error: 'Erro ao criar um novo contato' });
+  }
+});
+
+////////////////////////////////////////////////
+
+
+app.post('/visibilidade/create', verificarToken, async (req, res) => {
+  try {
+    const { nomeSecao, ativo } = req.body;
+    const newVisibilidade = await createVisibilidade(nomeSecao, ativo);
+    res.json(JSON.parse(newVisibilidade));
+  } catch (error) {
+    console.error('Erro ao criar uma nova visibilidade:', error);
+    res.status(500).json({ error: 'Erro ao criar uma nova visibilidade.' });
+  }
+});
+
+app.get('/visibilidade', verificarToken, async (req, res) => {
+  try {
+    const visibilidades = await getVisibilidade();
+
+    if (visibilidades) {
+      res.json(JSON.parse(visibilidades));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar visibilidades.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar visibilidades:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.put('/visibilidade/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { ativo } = req.body;
+    const updatedVisibilidade = await updateVisibilidadeAtivo(id, ativo);
+
+    if (updatedVisibilidade) {
+      res.json(JSON.parse(updatedVisibilidade));
+    } else {
+      res.status(404).json({ error: 'Visibilidade não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar a visibilidade:', error);
+    res.status(500).json({ error: 'Erro ao atualizar a visibilidade.' });
+  }
+});
+
+app.get('/visibilidade/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const visibilidade = await getVisibilidadeById(id);
+
+    if (visibilidade) {
+      res.json(JSON.parse(visibilidade));
+    } else {
+      res.status(404).json({ error: 'Visibilidade não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar visibilidade pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
 
