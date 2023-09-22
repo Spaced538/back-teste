@@ -1637,7 +1637,7 @@ app.get('/visibilidade/:id', async (req, res) => {
 ///////////////////////////////////////////////
 
 // Rota para buscar todos os clientes
-app.get('/cliente', async (req, res) => {
+app.get('/cliente', verificarToken, async (req, res) => {
   try {
     const clientes = await getClientes();
 
@@ -1653,7 +1653,7 @@ app.get('/cliente', async (req, res) => {
 });
 
 // Rota para criar um novo cliente
-app.post('/cliente/create', verificarToken, async (req, res) => {
+app.post('/cliente/create', async (req, res) => {
   try {
     const { nome, sobrenome, email } = req.body;
     const newCliente = await createCliente(nome, sobrenome, email);
