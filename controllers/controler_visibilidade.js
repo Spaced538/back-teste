@@ -2,7 +2,7 @@ const { pool } = require('../service/conectionDb/service');
 const { generateHexId } = require('./controlers_tables');
 
 
-const getVisibilidade = async () => {
+const getVisibilidade = async () => {  
     try {
       const client = await pool.connect();
       const queryResult = await client.query('SELECT * FROM visibilidade');

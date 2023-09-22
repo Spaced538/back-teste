@@ -22,6 +22,7 @@ const { getQuemSomos,createQuemSomos,deleteQuemSomos,updateQuemSomos,getQuemSomo
 const { createValor,getValor,deleteValor,updateValor,getValorById} = require('./controllers/controler_valor');
 const { getConfiguracoes,createConfiguracao,deleteConfiguracao,updateConfiguracao,getConfiguracaoById} = require('./controllers/controler_configuracao');
 const { getVisibilidade,updateVisibilidadeAtivo,getVisibilidadeById,createVisibilidade} = require('./controllers/controler_visibilidade');
+const { createCliente,getClientes,deleteCliente,updateCliente,getClienteById} = require('./controllers/controler_email_clientes');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -1632,6 +1633,79 @@ app.get('/visibilidade/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+///////////////////////////////////////////////
+
+// Rota para buscar todos os clientes
+app.get('/cliente', async (req, res) => {
+  try {
+    const clientes = await getClientes();
+
+    if (clientes) {
+      res.json(JSON.parse(clientes));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar clientes.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar clientes:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para criar um novo cliente
+app.post('/cliente/create', verificarToken, async (req, res) => {
+  try {
+    const { nome, sobrenome, email } = req.body;
+    const newCliente = await createCliente(nome, sobrenome, email);
+    res.json(JSON.parse(newCliente));
+  } catch (error) {
+    console.error('Erro ao criar um novo cliente:', error);
+    res.status(500).json({ error: 'Erro ao criar um novo cliente.' });
+  }
+});
+
+// Rota para excluir um cliente pelo ID
+app.delete('/cliente/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedCliente = await deleteCliente(id);
+    res.json(JSON.parse(deletedCliente));
+  } catch (error) {
+    console.error('Erro ao excluir o cliente:', error);
+    res.status(500).json({ error: 'Erro ao excluir o cliente.' });
+  }
+});
+
+// Rota para atualizar um cliente pelo ID
+app.put('/cliente/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nome, sobrenome, email } = req.body;
+    await updateCliente(id, nome, sobrenome, email);
+    res.json({ message: 'Cliente atualizado com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao atualizar o cliente:', error);
+    res.status(500).json({ error: 'Erro ao atualizar o cliente.' });
+  }
+});
+
+// Rota para buscar um cliente pelo ID
+app.get('/cliente/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const cliente = await getClienteById(id);
+
+    if (cliente) {
+      res.json(JSON.parse(cliente));
+    } else {
+      res.status(404).json({ error: 'Cliente não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar cliente pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 
 
