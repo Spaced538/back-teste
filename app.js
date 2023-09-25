@@ -1586,7 +1586,7 @@ app.post('/visibilidade/create', verificarToken, async (req, res) => {
   }
 });
 
-app.get('/visibilidade', verificarToken, async (req, res) => {
+app.get('/visibilidade', async (req, res) => {
   try {
     const visibilidades = await getVisibilidade();
 
