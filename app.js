@@ -525,25 +525,25 @@ app.delete('/servicos/:id', verificarToken, async (req, res) => {
 });
 
 // Configuração da rota para atualizar um colaborador
-app.put('/colaboradores/:id', verificarToken, upload.single('imagem'), async (req, res) => {
+app.put('/servicos/:id', verificarToken, upload.single('imagem'), async (req, res) => {
 
   try {
     const id = req.params.id;
 
-    const { nome, funcao } = req.body;
+    const { nome, preco } = req.body;
     const imagemBuffer = req.file ? req.file.buffer : undefined;
     const nameFile = req.file ? req.file.originalname : undefined;
 
     // Chama a função updateColaborador para atualizar um novo Colaborador
-    const updatedColaborador = await updateColaborador(id, nome, funcao, imagemBuffer, nameFile);
+    const updateServico = await updateServicos(id, nome, preco, imagemBuffer, nameFile);
 
     // Retorna o novo Colaborador como resposta da requisição
-    res.json(updatedColaborador);
+    res.json(updateServico);
   }
   catch (error) {
-    console.error('Erro ao atualizar o colaborador:', error);
+    console.error('Erro ao atualizar o serviço:', error);
     // Retorna uma resposta de erro com status 500
-    res.status(500).json({ error: 'Erro ao atualizar o colaborador' });
+    res.status(500).json({ error: 'Erro ao atualizar o serviço' });
   }
 });
 
