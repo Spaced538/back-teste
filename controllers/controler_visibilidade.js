@@ -63,13 +63,34 @@ const createVisibilidade = async (nomeSecao, ativo) => {
       throw error;
     }
 };
+
+const deleteVisibilidadeById = async (id) => {
+  try {
+      const client = await pool.connect();
+      const query = 'DELETE FROM visibilidade WHERE id = $1 RETURNING *';
+      const queryParams = [id];
+      const queryResult = await client.query(query, queryParams);
+      const deletedVisibilidade = queryResult.rows[0];
+      client.release();
+      if (deletedVisibilidade) {
+          return JSON.stringify(deletedVisibilidade);
+      } else {
+          return null; // O registro não foi encontrado para exclusão
+      }
+  } catch (error) {
+      console.error('Erro ao excluir a visibilidade pelo ID:', error);
+      throw error;
+  }
+};
+
   
   
   module.exports = {
     getVisibilidade,
     updateVisibilidadeAtivo,
     getVisibilidadeById,
-    createVisibilidade
+    createVisibilidade,
+    deleteVisibilidadeById
   };
   
 

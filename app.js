@@ -21,7 +21,7 @@ const { createOurTeamEntry,getAllOurTeamEntries,deleteOurTeamEntry,updateOurTeam
 const { getQuemSomos,createQuemSomos,deleteQuemSomos,updateQuemSomos,getQuemSomosById} = require('./controllers/controler_quem_somos');
 const { createValor,getValor,deleteValor,updateValor,getValorById} = require('./controllers/controler_valor');
 const { getConfiguracoes,createConfiguracao,deleteConfiguracao,updateConfiguracao,getConfiguracaoById} = require('./controllers/controler_configuracao');
-const { getVisibilidade,updateVisibilidadeAtivo,getVisibilidadeById,createVisibilidade} = require('./controllers/controler_visibilidade');
+const { getVisibilidade,updateVisibilidadeAtivo,getVisibilidadeById,createVisibilidade,deleteVisibilidadeById} = require('./controllers/controler_visibilidade');
 const { createCliente,getClientes,deleteCliente,updateCliente,getClienteById} = require('./controllers/controler_email_clientes');
 const app = express() 
 const jwt = require('jsonwebtoken');
@@ -1577,8 +1577,8 @@ app.post('/contacts/emails/create', async (req, res) => {
 
 app.post('/visibilidade/create', verificarToken, async (req, res) => {
   try {
-    const { nomeSecao, ativo } = req.body;
-    const newVisibilidade = await createVisibilidade(nomeSecao, ativo);
+    const { nome_secao, ativo } = req.body;
+    const newVisibilidade = await createVisibilidade(nome_secao, ativo);
     res.json(JSON.parse(newVisibilidade));
   } catch (error) {
     console.error('Erro ao criar uma nova visibilidade:', error);
@@ -1633,6 +1633,23 @@ app.get('/visibilidade/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+app.delete('/visibilidade/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const deletedVisibilidade = await deleteVisibilidadeById(id);
+
+    if (deletedVisibilidade) {
+      res.json(JSON.parse(deletedVisibilidade));
+    } else {
+      res.status(404).json({ error: 'Visibilidade não encontrada.' });
+    }
+  } catch (error) {
+    console.error('Erro ao excluir a visibilidade:', error);
+    res.status(500).json({ error: 'Erro ao excluir a visibilidade.' });
+  }
+});
+
 
 ///////////////////////////////////////////////
 
