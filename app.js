@@ -23,6 +23,7 @@ const { createValor,getValor,deleteValor,updateValor,getValorById} = require('./
 const { getConfiguracoes,createConfiguracao,deleteConfiguracao,updateConfiguracao,getConfiguracaoById} = require('./controllers/controler_configuracao');
 const { getVisibilidade,updateVisibilidadeAtivo,getVisibilidadeById,createVisibilidade,deleteVisibilidadeById} = require('./controllers/controler_visibilidade');
 const { createCliente,getClientes,deleteCliente,updateCliente,getClienteById} = require('./controllers/controler_email_clientes');
+const { createRecurso,getAllRecursos,deleteRecurso,updateRecurso,getRecursoById} = require('./controllers/controler_recursos');
 const app = express() 
 const jwt = require('jsonwebtoken');
 
@@ -1722,6 +1723,94 @@ app.get('/cliente/:id', verificarToken, async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
+
+///////////////////////////////////////
+
+// Rota para criar um novo recurso
+app.post('/recursos/create', verificarToken, upload.single('imagem'), async (req, res) => {
+  try {
+    const { titulo, descricao } = req.body;
+    const imagemBuffer = req.file.buffer;
+    const nomeArquivoImagem = req.file.originalname;
+
+    const newRecurso = await createRecurso(titulo, descricao, imagemBuffer, nomeArquivoImagem);
+
+    res.json(newRecurso);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao criar um novo recurso.' });
+  }
+});
+
+// Rota para listar todos os recursos
+app.get('/recursos', async (req, res) => {
+  try {
+    const recursos = await getAllRecursos();
+
+    if (recursos) {
+      res.json(JSON.parse(recursos));
+    } else {
+      res.status(500).json({ error: 'Erro ao buscar recursos.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar recursos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+// Rota para excluir um recurso com base no ID passado na rota
+app.delete('/recursos/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const deletedRecurso = await deleteRecurso(id);
+
+    res.json(deletedRecurso);
+    await deleteImageFromStorage(deletedRecurso.nome_arquivo_imagem);
+
+  } catch (error) {
+    console.error('Erro ao excluir um recurso:', error);
+    res.status(500).json({ error: 'Erro ao excluir um recurso.' });
+  }
+});
+
+// Rota para atualizar um recurso
+app.put('/recursos/:id', verificarToken, upload.fields([{ name: 'imagem', maxCount: 1 }]), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { titulo, descricao } = req.body;
+
+    const imagemBuffer = req.files['imagem'] ? req.files['imagem'][0].buffer : undefined;
+    const imageName = req.files['imagem'] ? req.files['imagem'][0].originalname : undefined;
+
+    const updatedRecurso = await updateRecurso(id, titulo, descricao, imagemBuffer, imageName);
+
+    res.json(updatedRecurso);
+
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar um recurso.' });
+  }
+});
+
+// Rota para buscar um recurso pelo ID
+app.get('/recursos/:id', verificarToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const recurso = await getRecursoById(id);
+
+    if (recurso) {
+      res.json(JSON.parse(recurso));
+    } else {
+      res.status(404).json({ error: 'Recurso não encontrado.' });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar um recurso pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
 
 
 
