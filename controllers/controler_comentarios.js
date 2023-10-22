@@ -25,6 +25,33 @@ const getComentarios = async (idPost) => {
       throw error;
     }
 };
+
+const getAllComentarios = async () => {
+  try {
+      // Obtém uma conexão do pool
+      const client = await pool.connect();
+
+      // Inicializa a variável queryText com a consulta SQL para obter todos os registros
+      const queryText = 'SELECT * FROM comentarios'; 
+
+      // Executa a consulta SQL
+      const queryResult = await client.query(queryText);
+
+      // Obtém todos os registros resultantes da consulta
+      const allComentarios = queryResult.rows;
+
+      // Libera a conexão de volta para o pool
+      client.release();
+
+      // Retorna todos os comentários encontrados no formato JSON
+      return JSON.stringify(allComentarios);
+  } catch (error) {
+      console.error('Erro ao buscar todos os comentários da tabela "comentarios":', error);
+      throw error;
+  }
+};
+
+
   
 const createComentario = async (idPost, texto) => {
     try {
@@ -113,7 +140,8 @@ module.exports = {
     createComentario,
     deleteComentario,
     updateComentario,
-    getComentarioById
+    getComentarioById,
+    getAllComentarios
 
 };
   

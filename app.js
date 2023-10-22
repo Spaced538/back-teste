@@ -15,7 +15,7 @@ const { createBookkeeping,getAllBookkeepingItems,deleteBookkeepingItem,updateBoo
 const { createConsultoria,getConsultoria,deleteConsultoria,updateConsultoria,getConsultoriaById } = require('./controllers/controler_consultoria');
 const { createCertificado,getAllCertificados,deleteCertificado,updateCertificado,getCertificadoById} = require('./controllers/controler_certificados');
 const { createConsulting,getAllConsultingItems,deleteConsultingItem,updateConsultingItem,getConsultingItemById} = require('./controllers/controler_consulting');
-const { getComentarios,createComentario,deleteComentario,updateComentario,getComentarioById} = require('./controllers/controler_comentarios');
+const { getComentarios,createComentario,deleteComentario,updateComentario,getComentarioById, getAllComentarios} = require('./controllers/controler_comentarios');
 const { createAgendamentos,getAgendamentos,deleteAgendamentos,updateAgendamentos,getAgendamentoById} = require('./controllers/controler_agendamentos');
 const { createOurTeamEntry,getAllOurTeamEntries,deleteOurTeamEntry,updateOurTeamEntry,getOurTeamEntryById} = require('./controllers/controler_nosso_time');
 const { getQuemSomos,createQuemSomos,deleteQuemSomos,updateQuemSomos,getQuemSomosById} = require('./controllers/controler_quem_somos');
@@ -1138,6 +1138,20 @@ app.get('/comentarios/id/:id', verificarToken, async (req, res) => {
     }
   } catch (error) {
     console.error('Erro ao buscar comentário pelo ID:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+app.get('/comentarios', verificarToken, async (req, res) => {
+  try {
+  
+    // Chama a função getComentarioById para obter o comentário pelo ID
+    const comentario = await getAllComentarios();
+    if (comentario) {
+      res.json(JSON.parse(comentario));
+    } else {
+      res.status(404).json({ error: 'Comentário não encontrado.' });
+    }
+  } catch (error) {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
