@@ -1548,8 +1548,8 @@ app.post('/contacts/emails/create', async (req, res) => {
     const { nome, sobrenome, email, assunto } = req.body;
 
     const mailOptions = {
-      from: 'ciro.ggj@gmail.com',
-      to: 'ciro.ggj@gmail.com',
+      from: 'contato@canadasimplificado.ca',
+      to: 'contato@canadasimplificado.ca',
       subject: `Novo Contato: ${nome} ${sobrenome}`,
       text: `Um novo contato foi feito.\n
              Nome: ${nome} ${sobrenome}\n
@@ -1562,8 +1562,8 @@ app.post('/contacts/emails/create', async (req, res) => {
       port: 587,
       secure: false,
       auth: {
-        user: 'ciro.ggj@gmail.com',
-        pass: 'nurwuteliclghwsv'
+        user: 'contato@canadasimplificado.ca',
+        pass: 'bwyqqwwrbmfbmqfm'
       },
     });
 
